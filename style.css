@@ -47,12 +47,12 @@ body, h1 {
   height: 35px;
 }
 
-.wheel {
+.wheelContainer {
   height: 265px;
   overflow: hidden;
 }
 
-.wheel li {
+li.wheelItem {
   border-bottom: 1px solid #ccc;
   font-size: 24px;
   padding: 15px 0;
@@ -70,4 +70,12 @@ body, h1 {
 
 #videoPlayerContainer {
   clear: left;
+}
+
+.videoList {
+  display: none;
+}
+
+.videoList.selected {
+  display: block;
 }

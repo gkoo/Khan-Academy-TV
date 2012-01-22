@@ -1,0 +1,10 @@
+{
+  "name": "Khan Academy Roulette",
+  "version": "1.0",
+  "description": "Learn about something random!",
+  "app": {
+    "launch": {
+      "local_path": "index.html"
+    }
+  }
+}
