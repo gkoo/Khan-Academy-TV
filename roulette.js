@@ -1,4 +1,5 @@
 var debug = 0,
+    playVideo = 1,
 
 Videos = Backbone.Collection.extend({
   initialize: function() {
@@ -18,6 +19,7 @@ Videos = Backbone.Collection.extend({
     // Choose random playlist
     rand = Math.floor(Math.random() * this.length);
     this.trigger('videos:randomVideo', this.at(rand));
+    console.log('video: ' + this.at(rand).get('title'));
   },
 }),
 
@@ -68,10 +70,11 @@ Playlists = Backbone.Collection.extend({
     }
     else {
       // Playlist is already downloaded.
-      console.log('triggering new video list');
       this.trigger('playlists:newVideoList', videos);
-      videos.randomVideo();
+      videos.chooseRandomVideo();
     }
+
+    console.log('playlist: ' + this.selectedPlaylist.get('title'));
   }
 }),
 
@@ -87,7 +90,9 @@ VideoPlayer = Backbone.View.extend({
 
   render: function() {
     var playerHtml = this.currVideo ? this.videoPlayerTemplate(this.currVideo.toJSON()) : '';
-    this.el.html(playerHtml);
+    if (playVideo) {
+      this.el.html(playerHtml);
+    }
   },
 
   handleRandomVideo: function(video) {
@@ -134,26 +139,22 @@ RouletteWheel = Backbone.View.extend({
         containerEl = (type === 'playlist') ? this.playlistEl : this.videoEl,
         wheelContainerEl = containerEl.children('.wheelContainer'),
         wheelEl = containerEl.find('.wheel'),
-        newScrollTop = itemEl.offset().top - wheelEl.offset().top;
+        newTop = (itemEl.offset().top - wheelEl.offset().top)*(-1);
+        // next line is just for centering the item in the wheel
+        newTop += wheelContainerEl.height()/2 - itemEl.height()/2 - parseInt(itemEl.css('padding-top'), 10)*2;
 
     if (type === 'video') {
       wheelEl = wheelEl.filter('.selected');
     }
-    console.log(wheelEl);
-    console.log(itemEl.offset().top);
-    console.log(wheelEl.offset().top);
-    console.log(newScrollTop);
-    wheelContainerEl.scrollTop(newScrollTop);
+    wheelEl.css('top', newTop);
   },
 
   handleRandomPlaylist: function(playlist) {
     // Scroll playlist to top of the playlist wheel.
     this.handleRandomItem(playlist, 'playlist');
-    console.log('Playlist Title: ' + playlist.get('title'));
   },
 
   handleRandomVideo: function(video) {
-    console.log('\n\n=========\nVideo: ' + video.get('title'));
     this.handleRandomItem(video, 'video');
   },
 
@@ -239,4 +240,8 @@ VideoChooser = function() {
 
 $(function() {
   var chooser = new VideoChooser();
+  playVideo = $('#playVideo').attr('checked') === 'checked';
+  $('#playVideo').on('change', function(evt) {
+    playVideo = !playVideo;
+  });
 });

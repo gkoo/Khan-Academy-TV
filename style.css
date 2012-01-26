@@ -44,12 +44,28 @@ body, h1 {
 }
 
 .label {
-  height: 35px;
+  height: 40px;
 }
 
 .wheelContainer {
-  height: 265px;
+  height: 250px;
   overflow: hidden;
+  position: relative;
+}
+
+.wheel {
+  padding-bottom: 200px;
+  width: 100%;
+
+  position: absolute;
+  left: 0;
+  top: 0;
+
+  -moz-transition:    top 2s ease-out;
+  -o-transition:      top 2s ease-out;
+  -webkit-transition: top 2s ease-out;
+  -ms-transition:     top 2s ease-out;
+  transition:         top 2s ease-out;
 }
 
 li.wheelItem {
