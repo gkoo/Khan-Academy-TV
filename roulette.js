@@ -138,15 +138,25 @@ RouletteWheel = Backbone.View.extend({
         itemEl = $('#' + itemId),
         containerEl = (type === 'playlist') ? this.playlistEl : this.videoEl,
         wheelContainerEl = containerEl.children('.wheelContainer'),
-        wheelEl = containerEl.find('.wheel'),
-        newTop = (itemEl.offset().top - wheelEl.offset().top)*(-1);
-        // next line is just for centering the item in the wheel
-        newTop += wheelContainerEl.height()/2 - itemEl.height()/2 - parseInt(itemEl.css('padding-top'), 10)*2;
+        wheelEl,
+        newTop;
+
+    if (type === 'playlist') {
+      wheelEl = containerEl.find('.wheel');
+    }
+    else {
+      // type === 'video'
+      wheelEl = containerEl.find('.wheel.selected');
+    }
+    newTop = (itemEl.offset().top - wheelEl.offset().top)*(-1);
+    // next line is just for centering the item in the wheel
+    newTop += wheelContainerEl.height()/2 - itemEl.height()/2 - parseInt(itemEl.css('padding-top'), 10)*2;
 
     if (type === 'video') {
       wheelEl = wheelEl.filter('.selected');
     }
-    wheelEl.css('top', newTop);
+    wheelEl.css('margin-top', newTop);
+    itemEl.addClass('selected');
   },
 
   handleRandomPlaylist: function(playlist) {
@@ -159,7 +169,7 @@ RouletteWheel = Backbone.View.extend({
   },
 
   resetVideoList: function(videos) {
-    var videoListEl = $('#' + videos.playlistId),
+    var videoListEl = $('#videos-' + videos.playlistId),
         wheelHtml = '',
         _this = this,
         newEl;
@@ -180,8 +190,10 @@ RouletteWheel = Backbone.View.extend({
     }
     else {
       // element already exists.
-      videoListEl.addClass('selected')
-                 .siblings('ul').removeClass('selected');
+      if (!videoListEl.hasClass('selected')) {
+        videoListEl.addClass('selected')
+                   .siblings('ul').removeClass('selected');
+      }
     }
   }
 }),

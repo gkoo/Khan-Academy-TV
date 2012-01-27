@@ -50,22 +50,18 @@ body, h1 {
 .wheelContainer {
   height: 250px;
   overflow: hidden;
-  position: relative;
 }
 
 .wheel {
+  margin: 0;
   padding-bottom: 200px;
   width: 100%;
 
-  position: absolute;
-  left: 0;
-  top: 0;
-
-  -moz-transition:    top 2s ease-out;
-  -o-transition:      top 2s ease-out;
-  -webkit-transition: top 2s ease-out;
-  -ms-transition:     top 2s ease-out;
-  transition:         top 2s ease-out;
+  -moz-transition:    margin 2s ease-out;
+  -o-transition:      margin 2s ease-out;
+  -webkit-transition: margin 2s ease-out;
+  -ms-transition:     margin 2s ease-out;
+  transition:         margin 2s ease-out;
 }
 
 li.wheelItem {
