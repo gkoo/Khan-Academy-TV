@@ -1,4 +1,3 @@
-// TODO: add bounds to dragging
 // TODO: add shadow gradient to wheels
 // TODO: include/exclude specific playlists
 
@@ -163,15 +162,14 @@ RouletteWheel = Backbone.View.extend({
                     'handleRandomPlaylist',
                     'handleRandomVideo',
                     'handleClick',
-                    'resetVideoList');
+                    'resetVideoList',
+                    'makeDraggable');
     _.extend(this, Backbone.Events);
 
     this.playlistEl = $('#playlist');
     this.videoEl = $('#video');
     this.playlistItemTemplate = _.template('<li id="playlist-<%= youtube_id %>" class="playlistItem wheelItem" data-youtube-id="<%= youtube_id %>"><%= title %></li>');
     this.videoItemTemplate = _.template('<li id="video-<%= youtube_id %>" class="videoItem wheelItem" data-youtube-id="<%= youtube_id %>"><%= title %></li>');
-    this.draggableOpts = { axis: 'y',
-                           distance: 5 };
 
     this.render();
   },
@@ -181,7 +179,8 @@ RouletteWheel = Backbone.View.extend({
   },
 
   render: function() {
-    var wheelEl = this.playlistEl.find('.wheel'),
+    var containerEl = this.playlistEl.children('.wheelContainer'),
+        wheelEl = containerEl.children('.wheel'),
         wheelHtml = '',
         _this = this,
         i, len;
@@ -190,7 +189,7 @@ RouletteWheel = Backbone.View.extend({
       wheelHtml += _this.playlistItemTemplate(playlistObj.toJSON());
     });
     wheelEl.html(wheelHtml);
-    wheelEl.draggable(this.draggableOpts);
+    this.makeDraggable(wheelEl, containerEl);
   },
 
   handleRandomItem: function(id, type) {
@@ -251,22 +250,24 @@ RouletteWheel = Backbone.View.extend({
     var videoListEl = $('#videos-' + videos.playlistId),
         wheelHtml = '',
         _this = this,
+        container = $('#video .wheelContainer'),
         newEl;
 
     if (!videoListEl.length) {
       // List element hasn't been constructed yet
       newEl = $('<ul>').attr('id', 'videos-'+videos.playlistId)
-                       .addClass('videoList wheel')
-                       .draggable(this.draggableOpts);
+                       .addClass('videoList wheel');
 
       videos.each(function(video) {
         wheelHtml += _this.videoItemTemplate(video.toJSON());
       });
 
       newEl.html(wheelHtml);
-      $('#video .wheelContainer').append(newEl);
+      container.append(newEl);
       newEl.addClass('selected')
            .siblings('ul').removeClass('selected');
+
+      this.makeDraggable(newEl, container);
     }
     else {
       // element already exists.
@@ -275,6 +276,17 @@ RouletteWheel = Backbone.View.extend({
                    .siblings('ul').removeClass('selected');
       }
     }
+  },
+
+  makeDraggable: function(el, parent) {
+    var parentTop = parent.offset().top,
+        relativeTop = parent.height()/2 - 44, // sort of hacky, I just wanted to get to 81.
+        minScroll = parentTop - el.height() + relativeTop,
+        maxScroll = parentTop + relativeTop;
+
+    el.draggable({ axis: 'y',
+                   distance: 5,
+                   containment: [0, minScroll, 0, maxScroll] }); // coordinates are relative to body, not container
   }
 }),
 
