@@ -11,6 +11,7 @@ body, h1 {
 }
 
 #pageTitle {
+  display: none;
   font-size: 64px;
   margin: 20px 0;
 }
@@ -55,13 +56,22 @@ body, h1 {
 .wheel {
   margin: 0;
   padding-bottom: 200px;
+  position: relative;
   width: 100%;
 
-  -moz-transition:    margin 2s ease-out;
-  -o-transition:      margin 2s ease-out;
-  -webkit-transition: margin 2s ease-out;
-  -ms-transition:     margin 2s ease-out;
-  transition:         margin 2s ease-out;
+  -moz-transition:    top 2s ease-out;
+  -o-transition:      top 2s ease-out;
+  -webkit-transition: top 2s ease-out;
+  -ms-transition:     top 2s ease-out;
+  transition:         top 2s ease-out;
+}
+
+.wheel.ui-draggable-dragging {
+  -moz-transition:    none;
+  -o-transition:      none;
+  -webkit-transition: none;
+  -ms-transition:     none;
+  transition:         none;
 }
 
 li.wheelItem {
@@ -81,7 +91,21 @@ li.wheelItem {
 }
 
 #videoPlayerContainer {
+  background-color: #000;
+  border: 20px solid #45250d;
   clear: left;
+  display: none;
+  margin: 0 auto;
+  width: 640px;
+
+  -moz-border-radius: 10px;
+  -webkit-border-radius: 10px;
+  -o-border-radius: 10px;
+  border-radius: 10px;
+}
+
+#videoPlayerContainer.show {
+  display: block;
 }
 
 .videoList {

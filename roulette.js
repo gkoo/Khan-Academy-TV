@@ -19,7 +19,7 @@ Videos = Backbone.Collection.extend({
     // Choose random playlist
     rand = Math.floor(Math.random() * this.length);
     this.trigger('videos:randomVideo', this.at(rand));
-    console.log('video: ' + this.at(rand).get('title'));
+    console.log('video:    ' + this.at(rand).get('title'));
   },
 }),
 
@@ -27,7 +27,8 @@ Playlists = Backbone.Collection.extend({
   init: function() {
     _.extend(this, Backbone.Events);
     _.bindAll(this, 'selectRandomPlaylist',
-                    'selectRandomVideo');
+                    'selectRandomVideo',
+                    'fetchVideosForPlaylist');
     this.playlistVideos = {}; // cached object of videos by playlist
 
     return this;
@@ -57,14 +58,7 @@ Playlists = Backbone.Collection.extend({
 
     if (!videos || !videos.length) {
       // Haven't downloaded the playlist yet. Let's do so now.
-      $.getJSON(this.selectedPlaylist.get('api_url'), function(data) {
-        videos = new Videos(data);
-        videos.playlistId = _this.selectedPlaylist.get('youtube_id');
-        _this.selectedPlaylist.set({ 'videos': videos });
-        _this.trigger('playlists:newVideoList', videos);
-        videos.bind('videos:randomVideo', function(video) {
-          _this.trigger('playlists:randomVideo', video);
-        });
+      this.fetchVideosForPlaylist(this.selectedPlaylist, function(videos) {
         videos.chooseRandomVideo();
       });
     }
@@ -75,6 +69,36 @@ Playlists = Backbone.Collection.extend({
     }
 
     console.log('playlist: ' + this.selectedPlaylist.get('title'));
+  },
+
+  fetchVideosForPlaylist: function(playlistToFetch, callback) {
+    // WHY ISN'T this BOUND TO Playlists??? ARGHHH
+    var playlist, videos, _this = this;
+
+    if (typeof playlistToFetch === 'string') {
+      console.log(this);
+      playlist = this.detect(function(pl) {
+        // use youtube_id because there's no other identifier =(
+        return pl.get('youtube_id') === playlistId;
+      });
+    }
+    else {
+      playlist = playlistToFetch;
+    }
+
+    $.getJSON(this.selectedPlaylist.get('api_url'), function(data) {
+      videos = new Videos(data);
+      videos.playlistId = playlist.get('youtube_id');
+      playlist.set({ 'videos': videos });
+      _this.trigger('playlists:newVideoList', videos);
+      videos.bind('videos:randomVideo', function(video) {
+        _this.trigger('playlists:randomVideo', video);
+      });
+
+      if (callback) {
+        callback(videos);
+      }
+    });
   }
 }),
 
@@ -92,6 +116,7 @@ VideoPlayer = Backbone.View.extend({
     var playerHtml = this.currVideo ? this.videoPlayerTemplate(this.currVideo.toJSON()) : '';
     if (playVideo) {
       this.el.html(playerHtml);
+      this.el.addClass('show');
     }
   },
 
@@ -109,14 +134,20 @@ RouletteWheel = Backbone.View.extend({
                     'handleRandomItem',
                     'handleRandomPlaylist',
                     'handleRandomVideo',
+                    'handleClick',
                     'resetVideoList');
+    _.extend(this, Backbone.Events);
 
     this.playlistEl = $('#playlist');
     this.videoEl = $('#video');
-    this.playlistItemTemplate = _.template('<li id="playlist-<%= youtube_id %>" class="playlistItem wheelItem"><%= title %></li>');
-    this.videoItemTemplate = _.template('<li id="video-<%= youtube_id %>" class="playlistItem wheelItem"><%= title %></li>');
+    this.playlistItemTemplate = _.template('<li id="playlist-<%= youtube_id %>" class="playlistItem wheelItem" data-youtube-id="<%= youtube_id %>"><%= title %></li>');
+    this.videoItemTemplate = _.template('<li id="video-<%= youtube_id %>" class="playlistItem wheelItem" data-youtube-id="<%= youtube_id %>"><%= title %></li>');
 
     this.render();
+  },
+
+  events: {
+    'click': 'handleClick'
   },
 
   render: function() {
@@ -129,12 +160,13 @@ RouletteWheel = Backbone.View.extend({
       wheelHtml += _this.playlistItemTemplate(playlistObj.toJSON());
     });
     wheelEl.html(wheelHtml);
+    wheelEl.draggable({ axis: 'y' });
   },
 
-  handleRandomItem: function(item, type) {
+  handleRandomItem: function(id, type) {
     // Decomposed method for scrolling wheels for random playlists and videos
     var idPrefix = (type === 'playlist') ? 'playlist-' : 'video-',
-        itemId = [idPrefix, item.get('youtube_id')].join(''),
+        itemId = [idPrefix, id].join(''),
         itemEl = $('#' + itemId),
         containerEl = (type === 'playlist') ? this.playlistEl : this.videoEl,
         wheelContainerEl = containerEl.children('.wheelContainer'),
@@ -155,17 +187,28 @@ RouletteWheel = Backbone.View.extend({
     if (type === 'video') {
       wheelEl = wheelEl.filter('.selected');
     }
-    wheelEl.css('margin-top', newTop);
+    wheelEl.css('top', newTop);
     itemEl.addClass('selected');
   },
 
   handleRandomPlaylist: function(playlist) {
     // Scroll playlist to top of the playlist wheel.
-    this.handleRandomItem(playlist, 'playlist');
+    this.handleRandomItem(playlist.get('youtube_id'), 'playlist');
   },
 
   handleRandomVideo: function(video) {
-    this.handleRandomItem(video, 'video');
+    this.handleRandomItem(video.get('youtube_id'), 'video');
+  },
+
+  handleClick: function(evt) {
+    var target = $(evt.target),
+        youtube_id;
+
+    if (target.hasClass('playlistItem')) {
+      youtube_id = target.attr('data-youtube-id');
+      this.handleRandomItem(youtube_id, 'playlist');
+      this.trigger('wheel:fetchVideosForPlaylist', youtube_id);
+    }
   },
 
   resetVideoList: function(videos) {
@@ -235,6 +278,7 @@ VideoChooser = function() {
       this.playlists.bind('playlists:randomVideo', this.wheel.handleRandomVideo);
       this.playlists.bind('playlists:randomVideo', this.player.handleRandomVideo);
       this.playlists.bind('playlists:newVideoList', this.wheel.resetVideoList);
+      this.wheel.bind('wheel:fetchVideosForPlaylist', this.playlists.fetchVideosForPlaylist);
     },
 
     playRandomVideo: function(evt) {
