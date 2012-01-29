@@ -50,6 +50,31 @@ body, h1 {
 .wheelContainer {
   height: 250px;
   overflow: hidden;
+  position: relative;
+}
+
+.gradientTop,
+.gradientBottom {
+  height: 40px;
+  width: 100%;
+
+  position: absolute;
+}
+
+.gradientTop {
+  background-image: -moz-linear-gradient(bottom, transparent, #000);
+  background-image: -ms-linear-gradient(bottom, transparent, #000);
+  background-image: -o-linear-gradient(bottom, transparent, #000);
+  background-image: -webkit-linear-gradient(bottom, transparent, #000);
+  top: 0;
+}
+
+.gradientBottom {
+  background-image: -moz-linear-gradient(bottom, #000, transparent);
+  background-image: -ms-linear-gradient(bottom, #000, transparent);
+  background-image: -o-linear-gradient(bottom, #000, transparent);
+  background-image: -webkit-linear-gradient(bottom, #000, transparent);
+  bottom: 0;
 }
 
 .wheel {
@@ -74,7 +99,7 @@ body, h1 {
 }
 
 li.wheelItem {
-  border-bottom: 1px solid #ccc;
+  /*border-bottom: 1px solid #ccc;*/
   cursor: pointer;
   font-size: 24px;
   padding: 15px 0;
