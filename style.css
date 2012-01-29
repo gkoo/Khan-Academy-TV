@@ -15,6 +15,80 @@ body, h1 {
   margin: 20px 0;
 }
 
+#tv {
+  background-color: #333;
+  border: 10px solid #8b451d;
+  margin: 0 auto;
+  padding: 20px 0 20px 20px;
+  width: 800px;
+
+  -moz-border-radius: 10px;
+  -webkit-border-radius: 10px;
+  -o-border-radius: 10px;
+  border-radius: 10px;
+}
+
+#dials {
+  text-align: center;
+}
+
+#dials .dial {
+  background-color: #000;
+  border: 4px solid #666;
+  display: block;
+  cursor: pointer;
+  margin: 24px auto;
+  overflow: hidden;
+
+  width: 48px;
+  height: 48px;
+
+  -moz-border-radius: 27px;
+  -webkit-border-radius: 27px;
+  -o-border-radius: 27px;
+  border-radius: 27px;
+}
+
+.spinnerThingy {
+  width: 48px;
+  height: 48px;
+
+  -moz-transition:    -moz-transform 2s ease-out;
+  -webkit-transition: -webkit-transform 2s ease-out;
+  -o-transition:      -o-transform 2s ease-out;
+  transition:         transform 2s ease-out;
+}
+
+.spinnerThingyInner {
+  border-right: 2px solid #fff;
+  width: 23px;
+  height: 48px;
+}
+
+#videoPlayerContainer {
+  background-color: #000;
+
+  clear: left;
+  padding-top: 5px;
+
+  min-height: 390px;
+  width: 710px;
+
+  -moz-border-radius: 50px;
+  -webkit-border-radius: 50px;
+  -o-border-radius: 50px;
+  border-radius: 50px;
+}
+
+#videoPlayerContainer.show {
+  display: block;
+}
+
+#sidePanel {
+  float: right;
+  width: 90px;
+}
+
 #rouletteBtn {
   font-size: 24px;
   font-weight: bold;
@@ -113,24 +187,6 @@ li.wheelItem {
   background-color: #ccc;
   font-size: 32px;
   padding: 5px;
-}
-
-#videoPlayerContainer {
-  background-color: #000;
-  border: 20px solid #45250d;
-  clear: left;
-  margin: 0 auto;
-  width: 640px;
-  min-height: 385px;
-
-  -moz-border-radius: 10px;
-  -webkit-border-radius: 10px;
-  -o-border-radius: 10px;
-  border-radius: 10px;
-}
-
-#videoPlayerContainer.show {
-  display: block;
 }
 
 .videoList {

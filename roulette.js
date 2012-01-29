@@ -1,5 +1,6 @@
-// TODO: add shadow gradient to wheels
 // TODO: include/exclude specific playlists
+// TODO: highlight selected wheel item
+// TODO: make dial spin when user scrolls on wheel
 
 var debug = 0,
     playVideo = 1,
@@ -29,7 +30,8 @@ Videos = Backbone.Collection.extend({
 Playlists = Backbone.Collection.extend({
   initialize: function() {
     _.extend(this, Backbone.Events);
-    _.bindAll(this, 'selectRandomPlaylist',
+    _.bindAll(this, 'getRandomPlaylist',
+                    'selectRandomPlaylist',
                     'selectRandomVideo',
                     'getPlaylistById',
                     'loadPlaylist',
@@ -38,7 +40,7 @@ Playlists = Backbone.Collection.extend({
     return this;
   },
 
-  selectRandomPlaylist: function() {
+  getRandomPlaylist: function() {
     var rand;
 
     if (this.length <= 0) {
@@ -52,12 +54,15 @@ Playlists = Backbone.Collection.extend({
     return this.at(rand);
   },
 
+  selectRandomPlaylist: function() {
+    this.selectedPlaylist = this.getRandomPlaylist();
+    this.trigger('playlists:randomPlaylist', this.selectedPlaylist);
+  },
+
   selectRandomVideo: function() {
     var videos, _this = this;
 
-    this.selectedPlaylist = this.selectRandomPlaylist();
-    this.trigger('randomPlaylist', this.selectedPlaylist);
-
+    this.selectRandomPlaylist();
     videos = this.selectedPlaylist.get('videos');
 
     if (!videos || !videos.length) {
@@ -150,7 +155,79 @@ VideoPlayer = Backbone.View.extend({
   playVideo: function(video) {
     this.currVideo = video;
     this.render();
+  }
+}),
+
+VideoDials = Backbone.View.extend({
+  el: $('#dials'),
+
+  initialize: function() {
+    _.extend(this, Backbone.Events);
+    _.bindAll(this, 'rotateDial',
+                    'handleClick');
+
+    this.playlistDialRotate = 0;
+    this.videoDialRotate = 0;
+
+    this.rotateDial('playlistDial');
+    this.rotateDial('videoDial');
   },
+
+  events: {
+    'click': 'handleClick'
+  },
+
+  rotateDial: function(dialId, rotateVal) {
+    var el = $('#' + dialId + ' .spinnerThingy');
+    if (typeof rotateVal === 'undefined') {
+      // min rotate: 360, max rotate: 720
+      rotateVal = Math.floor(Math.random()*360)+360;
+    }
+    if (dialId === 'playlistDial') {
+      rotateVal += this.playlistDialRotate;
+      this.playlistDialRotate = rotateVal;
+    }
+    else {
+      // dialId === 'videoDial'
+      rotateVal += this.videoDialRotate;
+      this.videoDialRotate = rotateVal;
+    }
+
+    rotateValStr = 'rotate(' + rotateVal + 'deg)';
+    el.css({'-moz-transform':    rotateValStr,
+            '-webkit-transform': rotateValStr,
+            '-o-transform':      rotateValStr,
+            'transform':         rotateValStr});
+  },
+
+  handleClick: function(evt) {
+    var el = $(evt.target),
+        dialEl,
+        id;
+
+    // Determine what dial was clicked.
+    if (el.hasClass('dial')) {
+      id = el.attr('id');
+    }
+    else {
+      dialEl = el.parentsUntil('#dials', '.dial');
+      if (dialEl.length) {
+        id = dialEl.attr('id');
+      }
+      else {
+        // clicked somewhere outside of the dials
+        return;
+      }
+    }
+
+    this.rotateDial(id);
+    if (id === 'playlistDial') {
+      this.trigger('dials:randomPlaylist');
+    }
+    else if (id === 'videoDial') {
+      this.trigger('dials:randomVideo');
+    }
+  }
 }),
 
 RouletteWheel = Backbone.View.extend({
@@ -300,6 +377,7 @@ VideoChooser = function() {
                       'playVideo');
 
       this.player = new VideoPlayer();
+      this.dials = new VideoDials();
 
       $.getJSON('http://www.khanacademy.org/api/playlists', this.populatePlaylists);
 
@@ -324,20 +402,20 @@ VideoChooser = function() {
     },
 
     setupBindings: function() {
-      this.playlists.bind('randomPlaylist', this.wheel.handleRandomPlaylist);
+      this.playlists.bind('playlists:randomPlaylist', this.wheel.handleRandomPlaylist);
       this.playlists.bind('playlists:randomVideo', this.wheel.handleRandomVideo);
       this.playlists.bind('playlists:randomVideo', this.player.playVideo);
       this.playlists.bind('playlists:newVideoList', this.wheel.resetVideoList);
       this.wheel.bind('wheel:loadPlaylist', this.playlists.loadPlaylist);
       this.wheel.bind('wheel:selectedVideo', this.playVideo);
+      this.dials.bind('dials:randomPlaylist', this.playlists.selectRandomPlaylist);
+      this.dials.bind('dials:randomVideo', this.playlists.selectRandomVideo);
     },
 
     playRandomVideo: function(evt) {
       // click handler for roulette button
       var _this = this;
-
       evt.preventDefault();
-
       this.video = this.playlists.selectRandomVideo();
     },
 
