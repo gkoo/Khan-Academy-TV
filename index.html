@@ -1,51 +1,58 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>KA Roulette</title>
+  <title>Khan Academy TV</title>
   <link rel="stylesheet" href="style.css"></link>
 </head>
 
 <body>
-  <div id="tv">
-    <div id="sidePanel">
-      <div id="dials">
-        <a id="playlistDial" class="dial" title="Choose a random playlist">
-          <div class="spinnerThingy">
-            <div class="spinnerThingyInner"></div>
+  <div id="wrapper">
+    <div id="tvWrapper">
+      <div id="tv">
+        <div id="sidePanel">
+          <div id="dials">
+            <!--
+            <a id="playlistDial" class="dial" title="Choose a random playlist">
+              <div class="spinnerThingy">
+                <div class="spinnerThingyInner"></div>
+              </div>
+            </a>
+            -->
+            <a id="videoDial" class="dial" title="Choose a random video">
+              <div class="spinnerThingy">
+                <div class="spinnerThingyInner"></div>
+              </div>
+            </a>
           </div>
-        </a>
-        <a id="videoDial" class="dial" title="Choose a random video">
-          <div class="spinnerThingy">
-            <div class="spinnerThingyInner"></div>
-          </div>
-        </a>
+        </div>
+        <div id="videoPlayerContainer"></div>
+        <h2 id="tvTitle"><a href="http://www.khanacademy.org" title="Go to the Khan Academy website">Khan Academy</a></h2>
       </div>
     </div>
-    <div id="videoPlayerContainer"></div>
-    <h2 id="tvTitle"><a href="http://www.khanacademy.org" title="Go to the Khan Academy website">Khan Academy</a></h2>
-  </div>
-  <!--<a href="#" id="rouletteBtn">Random Video</a>-->
-  <br>
-  <div id="chooserWrapper">
-    <div id="chooser">
-      <div id="playlist">
-        <h2 class="label">Categories</h2>
-        <div class="wheelContainer">
-          <ul class="wheel"></ul>
+    <!--<a href="#" id="rouletteBtn">Random Video</a>-->
+    <div id="chooserWrapper">
+      <div id="chooserBox">
+        <div id="chooser">
+          <div id="playlist">
+            <h2 class="label">Categories</h2>
+            <div class="wheelContainer">
+              <ul class="wheel"></ul>
+            </div>
+          </div>
+          <div id="video">
+            <h2 class="label">Videos</h2>
+            <div class="wheelContainer">
+            </div>
+          </div>
+          <div id="videoInfo">
+            <h2 class="label">Video</h2>
+            <div class="wheelContainer">
+            </div>
+          </div>
         </div>
-      </div>
-      <div id="video">
-        <h2 class="label">Videos</h2>
-        <div class="wheelContainer">
-        </div>
-      </div>
-      <div id="videoInfo">
-        <h2 class="label">Video</h2>
-        <div class="wheelContainer">
-        </div>
+        <a href="#" id="sliderBtn"><img src="chevron.png"></a>
       </div>
     </div>
-    <!--<div id="sliderBtn">up</div>-->
   </div>
   <script type="text/javascript" src="jquery-ui-1.8.17.custom/js/jquery-1.7.1.min.js"></script>
   <script type="text/javascript" src="jquery-ui-1.8.17.custom/js/jquery-ui-1.8.17.custom.min.js"></script>

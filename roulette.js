@@ -236,7 +236,7 @@ VideoDials = Backbone.View.extend({
 }),
 
 RouletteWheel = Backbone.View.extend({
-  el: $('#chooser'),
+  el: $('#chooserWrapper'),
 
   initialize: function() {
     _.bindAll(this, 'render',
@@ -358,6 +358,15 @@ RouletteWheel = Backbone.View.extend({
       youtube_id = target.attr('data-youtube-id');
       this.handleRandomItem(youtube_id, 'video', true);
       this.trigger('wheel:selectedVideo', youtube_id);
+    }
+    else if (target.attr('id') === 'sliderBtn' || target.parent().attr('id') === 'sliderBtn') {
+      if (this.el.hasClass('show')) {
+        this.el.removeClass('show');
+      }
+      else {
+        // is hidden; let's show.
+        this.el.addClass('show');
+      }
     }
   },
 
