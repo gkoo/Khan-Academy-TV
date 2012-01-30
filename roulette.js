@@ -1,9 +1,9 @@
 // TODO: include/exclude specific playlists
-// TODO: highlight selected wheel item
-// TODO: make dial spin when user scrolls on wheel
+// TODO: make dial spin when user scrolls on wheel(?)
+// TODO: provide a way to get back to current video(?)
+// TODO: filter out tokens with underscores from video descriptions
 
-var debug = 0,
-    playVideo = 1,
+var playVideo = 1,
 
 Videos = Backbone.Collection.extend({
   initialize: function() {
@@ -54,15 +54,17 @@ Playlists = Backbone.Collection.extend({
     return this.at(rand);
   },
 
-  selectRandomPlaylist: function() {
+  selectRandomPlaylist: function(highlight) {
+    highlight = typeof highlight !== 'undefined' ? highlight : false; // set default false
     this.selectedPlaylist = this.getRandomPlaylist();
-    this.trigger('playlists:randomPlaylist', this.selectedPlaylist);
+    this.trigger('playlists:randomPlaylist', { playlist: this.selectedPlaylist,
+                                               highlight: highlight });
   },
 
   selectRandomVideo: function() {
     var videos, _this = this;
 
-    this.selectRandomPlaylist();
+    this.selectRandomPlaylist(true);
     videos = this.selectedPlaylist.get('videos');
 
     if (!videos || !videos.length) {
@@ -182,6 +184,9 @@ VideoDials = Backbone.View.extend({
     if (typeof rotateVal === 'undefined') {
       // min rotate: 360, max rotate: 720
       rotateVal = Math.floor(Math.random()*360)+360;
+      if (Math.floor(Math.random()*2)) {
+        rotateVal *= (-1);
+      }
     }
     if (dialId === 'playlistDial') {
       rotateVal += this.playlistDialRotate;
@@ -235,6 +240,8 @@ RouletteWheel = Backbone.View.extend({
 
   initialize: function() {
     _.bindAll(this, 'render',
+                    'constructVideoInfoTemplate',
+                    'populateVideoInfo',
                     'handleRandomItem',
                     'handleRandomPlaylist',
                     'handleRandomVideo',
@@ -246,7 +253,8 @@ RouletteWheel = Backbone.View.extend({
     this.playlistEl = $('#playlist');
     this.videoEl = $('#video');
     this.playlistItemTemplate = _.template('<li id="playlist-<%= youtube_id %>" class="playlistItem wheelItem" data-youtube-id="<%= youtube_id %>"><%= title %></li>');
-    this.videoItemTemplate = _.template('<li id="video-<%= youtube_id %>" class="videoItem wheelItem" data-youtube-id="<%= youtube_id %>"><%= title %></li>');
+    this.videoItemTemplate = _.template('<li class="video-<%= youtube_id %> videoItem wheelItem" data-youtube-id="<%= youtube_id %>"><%= title %></li>');
+    this.constructVideoInfoTemplate();
 
     this.render();
   },
@@ -269,22 +277,41 @@ RouletteWheel = Backbone.View.extend({
     this.makeDraggable(wheelEl, containerEl);
   },
 
-  handleRandomItem: function(id, type) {
+  constructVideoInfoTemplate: function() {
+    var templateStr = '';
+    templateStr += '<table class="infoTable">';
+    templateStr += '  <tr valign="top"><th>Title</th><td><%= title %></td></tr>';
+    templateStr += '  <tr valign="top"><th>Playlists</th><td><%= playlist_titles.join(", ") %></td></tr>';
+    templateStr += '  <tr valign="top"><th>Description</th><td><%= description %></td></tr>';
+    templateStr += '  <tr valign="top"><th>Views</th><td><%= views %></td></tr>';
+    templateStr += '</table>';
+    templateStr += '<p><a href="<%= ka_url %>">View this video on the Khan Academy website</a></p>';
+    this.videoInfoTemplate = _.template(templateStr);
+  },
+
+  populateVideoInfo: function(video) {
+    var infoHtml = this.videoInfoTemplate(video.toJSON());
+    $('#videoInfo').find('.wheelContainer').html(infoHtml);
+  },
+
+  handleRandomItem: function(id, type, highlight) {
     // Decomposed method for scrolling wheels for random playlists and videos
-    var idPrefix = (type === 'playlist') ? 'playlist-' : 'video-',
-        itemId = [idPrefix, id].join(''),
-        itemEl = $('#' + itemId),
-        containerEl = (type === 'playlist') ? this.playlistEl : this.videoEl,
+    var idPrefix         = (type === 'playlist') ? 'playlist-' : 'video-',
+        itemId           = [idPrefix, id].join(''),
+        containerEl      = (type === 'playlist') ? this.playlistEl : this.videoEl,
         wheelContainerEl = containerEl.children('.wheelContainer'),
+        highlight        = (typeof highlight !== 'undefined') ? highlight : false,
         wheelEl,
         newTop;
 
     if (type === 'playlist') {
       wheelEl = containerEl.find('.wheel');
+      itemEl = $('#' + itemId);
     }
     else {
       // type === 'video'
       wheelEl = containerEl.find('.wheel.selected');
+      itemEl = $('#video .wheel.selected .' + itemId);
     }
     newTop = (itemEl.offset().top - wheelEl.offset().top)*(-1);
     // next line is just for centering the item in the wheel
@@ -293,17 +320,28 @@ RouletteWheel = Backbone.View.extend({
     if (type === 'video') {
       wheelEl = wheelEl.filter('.selected');
     }
-    wheelEl.css('top', newTop);
-    itemEl.addClass('selected');
+    wheelEl.css('top', newTop + 'px');
+
+    if (highlight) {
+      itemEl.addClass('selected')
+            .siblings('.selected').removeClass('selected');
+      if (type === 'playlist') {
+        this.selectedPlaylistEl = itemEl;
+      }
+      if (type === 'video') {
+        this.selectedVideoEl = itemEl;
+      }
+    }
   },
 
-  handleRandomPlaylist: function(playlist) {
+  handleRandomPlaylist: function(o) {
     // Scroll playlist to top of the playlist wheel.
-    this.handleRandomItem(playlist.get('youtube_id'), 'playlist');
+    this.handleRandomItem(o.playlist.get('youtube_id'), 'playlist', o.highlight);
   },
 
   handleRandomVideo: function(video) {
-    this.handleRandomItem(video.get('youtube_id'), 'video');
+    this.handleRandomItem(video.get('youtube_id'), 'video', true);
+    this.populateVideoInfo(video);
   },
 
   handleClick: function(evt) {
@@ -312,13 +350,13 @@ RouletteWheel = Backbone.View.extend({
 
     if (target.hasClass('playlistItem')) {
       youtube_id = target.attr('data-youtube-id');
-      this.handleRandomItem(youtube_id, 'playlist');
+      this.handleRandomItem(youtube_id, 'playlist', true);
       this.trigger('wheel:loadPlaylist', youtube_id);
     }
     else if (target.hasClass('videoItem')) {
       // time to play a video!
       youtube_id = target.attr('data-youtube-id');
-      this.handleRandomItem(youtube_id, 'video');
+      this.handleRandomItem(youtube_id, 'video', true);
       this.trigger('wheel:selectedVideo', youtube_id);
     }
   },
@@ -342,7 +380,7 @@ RouletteWheel = Backbone.View.extend({
       newEl.html(wheelHtml);
       container.append(newEl);
       newEl.addClass('selected')
-           .siblings('ul').removeClass('selected');
+           .siblings('.selected').removeClass('selected');
 
       this.makeDraggable(newEl, container);
     }
@@ -428,6 +466,7 @@ VideoChooser = function() {
           });
 
       this.player.playVideo(video);
+      this.wheel.populateVideoInfo(video);
     }
   };
 
@@ -438,8 +477,10 @@ $(function() {
   var chooser = new VideoChooser();
   // debug stuff
   // ===========
+  /*
   playVideo = $('#playVideo').attr('checked') === 'checked';
   $('#playVideo').on('change', function(evt) {
     playVideo = !playVideo;
   });
+  */
 });

@@ -6,7 +6,6 @@
 </head>
 
 <body>
-  <h1 id="pageTitle">Khan Academy Roulette</h1>
   <div id="tv">
     <div id="sidePanel">
       <div id="dials">
@@ -23,31 +22,30 @@
       </div>
     </div>
     <div id="videoPlayerContainer"></div>
+    <h2 id="tvTitle"><a href="http://www.khanacademy.org" title="Go to the Khan Academy website">Khan Academy</a></h2>
   </div>
-  <a href="#" id="rouletteBtn">Random Video</a>
+  <!--<a href="#" id="rouletteBtn">Random Video</a>-->
   <br>
-  <label for="playVideo">
-    <input type="checkbox" id="playVideo" name="playVideo">
-    Actually Play Video
-  </label>
   <div id="chooserWrapper">
     <div id="chooser">
       <div id="playlist">
-        <h2 class="label">Category</h2>
+        <h2 class="label">Categories</h2>
         <div class="wheelContainer">
-          <div class="gradientTop"></div>
           <ul class="wheel"></ul>
-          <div class="gradientBottom"></div>
         </div>
       </div>
       <div id="video">
+        <h2 class="label">Videos</h2>
+        <div class="wheelContainer">
+        </div>
+      </div>
+      <div id="videoInfo">
         <h2 class="label">Video</h2>
         <div class="wheelContainer">
-          <div class="gradientTop"></div>
-          <div class="gradientBottom"></div>
         </div>
       </div>
     </div>
+    <!--<div id="sliderBtn">up</div>-->
   </div>
   <script type="text/javascript" src="jquery-ui-1.8.17.custom/js/jquery-1.7.1.min.js"></script>
   <script type="text/javascript" src="jquery-ui-1.8.17.custom/js/jquery-ui-1.8.17.custom.min.js"></script>
@@ -56,4 +54,4 @@
   <script type="text/javascript" src="roulette.js"></script>
 </body>
 
-</html> 
+</html>
