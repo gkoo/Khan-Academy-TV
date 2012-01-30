@@ -2,6 +2,7 @@
 // TODO: make dial spin when user scrolls on wheel(?)
 // TODO: provide a way to get back to current video(?)
 // TODO: filter out tokens with underscores from video descriptions
+// TODO: figure out scroll containment bug.
 
 var playVideo = 1,
 
@@ -348,6 +349,7 @@ RouletteWheel = Backbone.View.extend({
     var target = $(evt.target),
         youtube_id;
 
+    evt.preventDefault();
     if (target.hasClass('playlistItem')) {
       youtube_id = target.attr('data-youtube-id');
       this.handleRandomItem(youtube_id, 'playlist', true);
@@ -409,8 +411,8 @@ RouletteWheel = Backbone.View.extend({
         maxScroll = parentTop + relativeTop;
 
     el.draggable({ axis: 'y',
-                   distance: 5,
-                   containment: [0, minScroll, 0, maxScroll] }); // coordinates are relative to body, not container
+                   distance: 5 });
+                   //containment: [0, minScroll, 0, maxScroll] }); // coordinates are relative to body, not container
   }
 }),
 
