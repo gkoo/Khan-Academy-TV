@@ -1,0 +1,279 @@
+/* LESS mixins */
+/* =========== */
+.transform-transition (@duration, @easing) {
+  -moz-transition:    -moz-transform @duration @easing;
+  -webkit-transition: -webkit-transform @duration @easing;
+  -o-transition:      -o-transform @duration @easing;
+  transition:         transform @duration @easing;
+}
+
+.transition (@property, @duration, @easing) {
+  -moz-transition:    @property @duration @easing;
+  -ms-transition:     @property @duration @easing;
+  -o-transition:      @property @duration @easing;
+  -webkit-transition: @property @duration @easing;
+  transition:         @property @duration @easing;
+}
+
+.rounded-corners (@radius) {
+  -moz-border-radius: @radius;
+  -webkit-border-radius: @radius;
+  -o-border-radius: @radius;
+  border-radius: @radius;
+}
+
+.rotate (@degrees) {
+  -moz-transform: rotate(@degrees);
+  -webkit-transform: rotate(@degrees);
+  -o-transform: rotate(@degrees);
+  transform: rotate(@degrees);
+}
+
+/* Normal CSS */
+/* ========== */
+body, h1, h2, h3, h4, h5, h6, div, ul, ol, li {
+  border: 0;
+  font-family: Helvetica, Arial;
+  font-size: 10px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  padding-top: 50px;
+  text-align: center;
+}
+
+#wrapper {
+  position: relative;
+}
+
+#tvWrapper,
+#chooserWrapper {
+  position: absolute;
+  left: 0;
+  width: 100%;
+
+  text-align: center;
+}
+
+#tvWrapper {
+  top: 0;
+  z-index: 50;
+}
+
+#chooserWrapper {
+  top: 161px;
+
+  .transition(top, 1s, ease-out);
+}
+
+#chooserWrapper.show {
+  top: 501px; /* 481px + 20 */
+}
+
+#tv, #chooserBox {
+  .rounded-corners(10px);
+}
+
+#tv {
+  background-color: #333;
+  border: 10px solid #000;
+  margin: 0 auto;
+  padding: 20px 0 20px 20px;
+  width: 800px;
+}
+
+#dials {
+  text-align: center;
+}
+
+#dials .dial {
+  background-color: #000;
+  border: 4px solid #666;
+  display: block;
+  cursor: pointer;
+  margin: 24px auto;
+  overflow: hidden;
+
+  width: 48px;
+  height: 48px;
+
+  .rounded-corners(27px);
+}
+
+#dials .dial:hover {
+  background-color: #333;
+}
+
+.spinnerThingy {
+  width: 48px;
+  height: 48px;
+
+  .transform-transition(2s, ease-out);
+}
+
+.spinnerThingyInner {
+  border-right: 6px solid #fff;
+  width: 21px;
+  height: 48px;
+}
+
+#videoPlayerContainer {
+  background-color: #000;
+
+  clear: left;
+  padding-top: 5px;
+
+  min-height: 390px;
+  width: 710px;
+
+  .rounded-corners(50px);
+}
+
+#videoPlayerContainer.show {
+  display: block;
+}
+
+#tvTitle {
+  margin-top: 10px;
+  width: 780px;
+  min-height: 16px;
+}
+
+#tvTitle a {
+  color: #ccc;
+  font-size: 16px;
+  text-decoration: none;
+}
+
+#sidePanel {
+  float: right;
+  width: 90px;
+}
+
+#rouletteBtn {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+#chooserBox {
+  background-color: #A62F00;
+  margin: 0 auto 40px;
+  padding: 10px;
+  text-align: center;
+  width: 820px; /* 405*2 + 10 */
+  height: 300px;
+}
+
+#chooser {
+  height: 300px;
+}
+
+#playlist,
+#video,
+#videoInfo {
+  border-left: 10px solid #000;
+  float: left;
+  font-size: 16px;
+  margin: 0 auto;
+  width: 266px;
+  height: 296px;
+}
+
+#playlist {
+  border-left: 0;
+}
+
+.label {
+  line-height: 36px;
+  min-height: 36px;
+}
+
+.wheelContainer {
+  background-color: #fff;
+  height: 250px;
+  overflow: hidden;
+  position: relative;
+}
+
+.wheel {
+  margin: 0;
+  padding-bottom: 200px;
+  position: relative;
+  width: 100%;
+
+  .transition(top, 2s, ease-out);
+}
+
+.wheel.ui-draggable-dragging {
+  .transition(top, 0, ease-out);
+}
+
+li.wheelItem {
+  border-bottom: 1px solid #ccc;
+  cursor: pointer;
+  font-size: 24px;
+  padding: 15px 0;
+}
+
+li.wheelItem.selected,
+li.wheelItem:hover {
+  background-color: #FFE373;
+}
+
+.label {
+  background-color: #ccc;
+  font-size: 32px;
+  padding: 5px;
+}
+
+.videoList {
+  display: none;
+}
+
+.videoList.selected {
+  display: block;
+}
+
+.infoTable {
+  font-size: 16px;
+  text-align: left;
+}
+
+#videoInfo .wheelContainer {
+  height: 230px;
+  overflow: auto;
+  padding: 10px;
+}
+
+#videoInfo p {
+  font-size: 16px;
+  text-align: left;
+}
+
+#sliderBtn {
+  background-color: #ccc;
+  border: 1px solid #000;
+  border-top: 0;
+  display: block;
+  margin: 10px auto;
+  width: 50px;
+}
+
+#sliderBtn:hover {
+  background-color: #fff;
+}
+
+#sliderBtn img {
+  width: 10px;
+  height: 22px;
+
+  .rotate(90deg);
+  .transform-transition(1s, ease-out);
+}
+
+#chooserWrapper.show #sliderBtn img {
+  .rotate(270deg);
+}
