@@ -251,10 +251,10 @@ RouletteWheel = Backbone.View.extend({
                     'makeDraggable');
     _.extend(this, Backbone.Events);
 
-    this.playlistEl = $('#playlist');
-    this.videoEl = $('#video');
-    this.playlistItemTemplate = _.template('<li id="playlist-<%= youtube_id %>" class="playlistItem wheelItem" data-youtube-id="<%= youtube_id %>"><%= title %></li>');
-    this.videoItemTemplate = _.template('<li class="video-<%= youtube_id %> videoItem wheelItem" data-youtube-id="<%= youtube_id %>"><%= title %></li>');
+    this.playlistEl           = $('#playlist');
+    this.videoEl              = $('#video');
+    this.playlistItemTemplate = _.template('<li id="playlist-<%= id %>" class="playlistItem wheelItem"><%= title %></li>');
+    this.videoItemTemplate    = _.template('<li class="video-<%= id %> videoItem wheelItem"><%= title %></li>');
     this.constructVideoInfoTemplate();
 
     this.render();
@@ -428,7 +428,7 @@ VideoChooser = function() {
       this.player = new VideoPlayer();
       this.dials = new VideoDials();
 
-      $.getJSON('http://www.khanacademy.org/api/playlists', this.populatePlaylists);
+      $.getJSON('http://www.khanacademy.org/api/v1/playlists', this.populatePlaylists);
 
       $('#rouletteBtn').click(this.playRandomVideo);
 
