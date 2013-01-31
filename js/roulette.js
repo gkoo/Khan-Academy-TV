@@ -24,7 +24,6 @@ Videos = Backbone.Collection.extend({
     // Choose random playlist
     rand = Math.floor(Math.random() * this.length);
     this.trigger('videos:randomVideo', this.at(rand));
-    console.log('video:    ' + this.at(rand).get('title'));
   },
 }),
 
@@ -81,7 +80,6 @@ Playlists = Backbone.Collection.extend({
       videos.chooseRandomVideo();
     }
 
-    console.log('playlist: ' + this.selectedPlaylist.get('title'));
   },
 
   getPlaylistById: function(youtube_id) {
@@ -121,9 +119,9 @@ Playlists = Backbone.Collection.extend({
       playlist = playlistToFetch;
     }
 
-    $.getJSON(playlist.get('api_url'), function(data) {
+    $.getJSON('http://www.khanacademy.org/api/v1/playlists/' + playlist.id + '/videos', function(data) {
       videos = new Videos(data);
-      videos.playlistId = playlist.get('youtube_id');
+      videos.playlistId = playlist.id;
       playlist.set({ 'videos': videos });
       videos.bind('videos:randomVideo', function(video) {
         _this.trigger('playlists:randomVideo', video);
@@ -254,7 +252,7 @@ RouletteWheel = Backbone.View.extend({
     this.playlistEl           = $('#playlist');
     this.videoEl              = $('#video');
     this.playlistItemTemplate = _.template('<li id="playlist-<%= id %>" class="playlistItem wheelItem"><%= title %></li>');
-    this.videoItemTemplate    = _.template('<li class="video-<%= id %> videoItem wheelItem"><%= title %></li>');
+    this.videoItemTemplate    = _.template('<li class="video-<%= readable_id %> videoItem wheelItem" data-youtube-id="<%= youtube_id %>"><%= title %></li>');
     this.constructVideoInfoTemplate();
 
     this.render();
@@ -282,7 +280,7 @@ RouletteWheel = Backbone.View.extend({
     var templateStr = '';
     templateStr += '<table class="infoTable">';
     templateStr += '  <tr valign="top"><th>Title</th><td><%= title %></td></tr>';
-    templateStr += '  <tr valign="top"><th>Playlists</th><td><%= playlist_titles.join(", ") %></td></tr>';
+    //templateStr += '  <tr valign="top"><th>Playlists</th><td><%= playlist_titles.join(", ") %></td></tr>';
     templateStr += '  <tr valign="top"><th>Description</th><td><%= description %></td></tr>';
     templateStr += '  <tr valign="top"><th>Views</th><td><%= views %></td></tr>';
     templateStr += '</table>';
@@ -302,6 +300,7 @@ RouletteWheel = Backbone.View.extend({
         containerEl      = (type === 'playlist') ? this.playlistEl : this.videoEl,
         wheelContainerEl = containerEl.children('.wheelContainer'),
         highlight        = (typeof highlight !== 'undefined') ? highlight : false,
+        itemEl,
         wheelEl,
         newTop;
 
@@ -337,11 +336,11 @@ RouletteWheel = Backbone.View.extend({
 
   handleRandomPlaylist: function(o) {
     // Scroll playlist to top of the playlist wheel.
-    this.handleRandomItem(o.playlist.get('youtube_id'), 'playlist', o.highlight);
+    this.handleRandomItem(o.playlist.id, 'playlist', o.highlight);
   },
 
   handleRandomVideo: function(video) {
-    this.handleRandomItem(video.get('youtube_id'), 'video', true);
+    this.handleRandomItem(video.get('readable_id'), 'video', true);
     this.populateVideoInfo(video);
   },
 
