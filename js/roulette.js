@@ -4,9 +4,11 @@
 // TODO: filter out tokens with underscores from video descriptions
 // TODO: figure out scroll containment bug.
 
-var playVideo = 1,
+var debug = 0,
+    playVideo = 1,
+    eventsMediator = {}, // to extend with Backbone.Events
 
-Videos = Backbone.Collection.extend({
+VideoCollection = Backbone.Collection.extend({
   initialize: function() {
     _.bindAll(this, 'chooseRandomVideo');
     _.extend(this, Backbone.Events);
@@ -27,7 +29,7 @@ Videos = Backbone.Collection.extend({
   },
 }),
 
-Playlists = Backbone.Collection.extend({
+PlaylistCollection = Backbone.Collection.extend({
   initialize: function() {
     _.extend(this, Backbone.Events);
     _.bindAll(this, 'getRandomPlaylist',
@@ -45,7 +47,6 @@ Playlists = Backbone.Collection.extend({
 
     if (this.length <= 0) {
       alert('Error! No playlists...');
-      console.log('Check to make sure debug==0');
       return null;
     }
 
@@ -82,28 +83,27 @@ Playlists = Backbone.Collection.extend({
 
   },
 
-  getPlaylistById: function(youtube_id) {
-    // use youtube_id because there's no other identifier =(
+  getPlaylistById: function(id) {
     return this.find(function(pl) {
-      return pl.get('youtube_id') === youtube_id;
+      return pl.get('id') === id;
     });
   },
 
-  loadPlaylist: function(youtube_id) {
+  loadPlaylist: function(id) {
     var _this = this,
         videos;
 
-    this.selectedPlaylist = this.getPlaylistById(youtube_id);
+    this.selectedPlaylist = this.getPlaylistById(id);
     videos = this.selectedPlaylist.get('videos');
 
     if (videos && videos.length) {
       // Video list was already downloaded
-      this.trigger('playlists:newVideoList', videos);
+      eventsMediator.trigger('playlists:newVideoList', videos);
     }
     else {
       // Need to fetch video list
-      this.fetchVideosForPlaylist(youtube_id, function(v) {
-        _this.trigger('playlists:newVideoList', v);
+      this.fetchVideosForPlaylist(id, function(v) {
+        eventsMediator.trigger('playlists:newVideoList', v);
       });
     }
   },
@@ -234,28 +234,13 @@ VideoDials = Backbone.View.extend({
   }
 }),
 
-RouletteWheel = Backbone.View.extend({
-  el: $('#chooserWrapper'),
-
+/**
+ * View for Playlists and Videos
+ */
+ListView = Backbone.View.extend({
   initialize: function() {
-    _.bindAll(this, 'render',
-                    'constructVideoInfoTemplate',
-                    'populateVideoInfo',
-                    'handleRandomItem',
-                    'handleRandomPlaylist',
-                    'handleRandomVideo',
-                    'handleClick',
-                    'resetVideoList',
-                    'makeDraggable');
     _.extend(this, Backbone.Events);
-
-    this.playlistEl           = $('#playlist');
-    this.videoEl              = $('#video');
-    this.playlistItemTemplate = _.template('<li id="playlist-<%= id %>" class="playlistItem wheelItem"><%= title %></li>');
-    this.videoItemTemplate    = _.template('<li class="video-<%= readable_id %> videoItem wheelItem" data-youtube-id="<%= youtube_id %>"><%= title %></li>');
-    this.constructVideoInfoTemplate();
-
-    this.render();
+    _.bindAll(this);
   },
 
   events: {
@@ -263,41 +248,28 @@ RouletteWheel = Backbone.View.extend({
   },
 
   render: function() {
-    var containerEl = this.playlistEl.children('.wheelContainer'),
-        wheelEl = containerEl.children('.wheel'),
-        wheelHtml = '',
-        _this = this,
-        i, len;
+    var html = '',
+        models,
+        i,
+        len;
 
-    this.collection.each(function(playlistObj) {
-      wheelHtml += _this.playlistItemTemplate(playlistObj.toJSON());
-    });
-    wheelEl.html(wheelHtml);
-    this.makeDraggable(wheelEl, containerEl);
-  },
-
-  constructVideoInfoTemplate: function() {
-    var templateStr = '';
-    templateStr += '<table class="infoTable">';
-    templateStr += '  <tr valign="top"><th>Title</th><td><%= title %></td></tr>';
-    //templateStr += '  <tr valign="top"><th>Playlists</th><td><%= playlist_titles.join(", ") %></td></tr>';
-    templateStr += '  <tr valign="top"><th>Description</th><td><%= description %></td></tr>';
-    templateStr += '  <tr valign="top"><th>Views</th><td><%= views %></td></tr>';
-    templateStr += '</table>';
-    templateStr += '<p><a href="<%= ka_url %>">View this video on the Khan Academy website</a></p>';
-    this.videoInfoTemplate = _.template(templateStr);
-  },
-
-  populateVideoInfo: function(video) {
-    var infoHtml = this.videoInfoTemplate(video.toJSON());
-    $('#videoInfo').find('.wheelContainer').html(infoHtml);
+    if (_.isEmpty(this.collection)) {
+      this.$el.children('.dropdown').hide();
+    }
+    else {
+      models = this.collection.models;
+      for (i = 0, len = models.length; i < len; ++i) {
+        html += this.template(models[i].toJSON());
+      }
+      this.$el.children('.dropdown').html(html).show();
+    }
   },
 
   handleRandomItem: function(id, type, highlight) {
     // Decomposed method for scrolling wheels for random playlists and videos
     var idPrefix         = (type === 'playlist') ? 'playlist-' : 'video-',
         itemId           = [idPrefix, id].join(''),
-        containerEl      = (type === 'playlist') ? this.playlistEl : this.videoEl,
+        containerEl      = (type === 'playlist') ? this.$playlistEl : this.$videoEl,
         wheelContainerEl = containerEl.children('.wheelContainer'),
         highlight        = (typeof highlight !== 'undefined') ? highlight : false,
         itemEl,
@@ -334,6 +306,123 @@ RouletteWheel = Backbone.View.extend({
     }
   },
 
+  setTemplate: function(template) {
+    this.template = template;
+  }
+}),
+
+PlaylistsView = ListView.extend({
+  template: _.template('<li id="playlist-<%= id %>" class="playlist-item"><a href="#"><%= title %></a></li>'),
+
+  handleClick: function(evt) {
+    var $target = $(evt.target),
+        $parent = $target.parent(),
+        id;
+
+    evt.preventDefault();
+    if ($target[0].nodeName === 'A' && $parent.hasClass('playlist-item')) {
+      id = $parent.attr('id').substring(9);
+      //this.handleRandomItem(id, 'playlist', true);
+      eventsMediator.trigger('controls:loadPlaylist', id);
+    }
+  },
+}),
+
+VideosView = ListView.extend({
+  template: _.template('<li value="video-<%= readable_id %>" data-youtube-id="<%= youtube_id %>" class="video for-playlist-<%= playlistId %>"><a href="#"><%= title %></a></li>'),
+
+  handleClick: function(evt) {
+  },
+
+  showPlaylist: function(id) {
+    var $videoItems = this.$el.find('.for-playlist-' + id),
+        $dropdownEl = this.$el.find('.dropdown'),
+        html = '',
+        videoModels,
+        i,
+        len;
+
+    if ($videoItems.length === 0) {
+      videoModels = this.collection.where({ playlistId: id });
+
+      if (_.isEmpty(videoModels)) {
+        throw "No videos found for playlist " + id;
+      }
+
+      for (i = 0, len = videoModels.length; i < len; ++i) {
+        html += this.template(videoModels[i].toJSON());
+      }
+      this.$el.find('.video').hide();
+      $dropdownEl.append($(html));
+    }
+    else {
+      this.$el.find('.video').not($videoItems).hide();
+      $videoItems.show();
+    }
+
+    $dropdownEl.show();
+  }
+}),
+
+ControlsView = Backbone.View.extend({
+  el: $('#controls'),
+
+  initialize: function() {
+    _.bindAll(this, 'render',
+                    'constructVideoInfoTemplate',
+                    'populateVideoInfo',
+                    'handleRandomPlaylist',
+                    'handleRandomVideo',
+                    'resetVideoList',
+                    'makeDraggable');
+    //_.extend(this, Backbone.Events);
+
+    this.playlistsView = new PlaylistsView({ el: $('#playlists') });
+    this.videosView = new VideosView({ el: $('#videos') });
+
+    this.$playlistEl           = $('#playlists');
+    this.$videoEl              = $('#videos');
+    this.$videoInfoEl          = $('#videoInfo');
+    this.constructVideoInfoTemplate();
+
+    this.render();
+  },
+
+  render: function() {
+    this.playlistsView.render();
+    this.videosView.render();
+    //this.makeDraggable(dropdownEl, containerEl);
+  },
+
+  setPlaylistCollection: function(playlists) {
+    this.playlistsView.collection = playlists;
+    this.playlistsView.render();
+    return this;
+  },
+
+  setVideoCollection: function(videos) {
+    this.videosView.collection = videos;
+    return this;
+  },
+
+  constructVideoInfoTemplate: function() {
+    var templateStr = '';
+    templateStr += '<table class="infoTable">';
+    templateStr += '  <tr valign="top"><th>Title</th><td><%= title %></td></tr>';
+    //templateStr += '  <tr valign="top"><th>Playlists</th><td><%= playlist_titles.join(", ") %></td></tr>';
+    templateStr += '  <tr valign="top"><th>Description</th><td><%= description %></td></tr>';
+    templateStr += '  <tr valign="top"><th>Views</th><td><%= views %></td></tr>';
+    templateStr += '</table>';
+    templateStr += '<p><a href="<%= ka_url %>">View this video on the Khan Academy website</a></p>';
+    this.videoInfoTemplate = _.template(templateStr);
+  },
+
+  populateVideoInfo: function(video) {
+    var infoHtml = this.videoInfoTemplate(video.toJSON());
+    this.$videoInfoEl.find('.wheelContainer').html(infoHtml);
+    return this;
+  },
+
   handleRandomPlaylist: function(o) {
     // Scroll playlist to top of the playlist wheel.
     this.handleRandomItem(o.playlist.id, 'playlist', o.highlight);
@@ -344,6 +433,7 @@ RouletteWheel = Backbone.View.extend({
     this.populateVideoInfo(video);
   },
 
+  /*
   handleClick: function(evt) {
     var target = $(evt.target),
         youtube_id;
@@ -352,13 +442,13 @@ RouletteWheel = Backbone.View.extend({
     if (target.hasClass('playlistItem')) {
       youtube_id = target.attr('data-youtube-id');
       this.handleRandomItem(youtube_id, 'playlist', true);
-      this.trigger('wheel:loadPlaylist', youtube_id);
+      eventsMediator.trigger('controls:loadPlaylist', youtube_id);
     }
     else if (target.hasClass('videoItem')) {
       // time to play a video!
       youtube_id = target.attr('data-youtube-id');
       this.handleRandomItem(youtube_id, 'video', true);
-      this.trigger('wheel:selectedVideo', youtube_id);
+      this.trigger('controls:selectedVideo', youtube_id);
     }
     else if (target.attr('id') === 'sliderBtn' || target.parent().attr('id') === 'sliderBtn') {
       if (this.el.hasClass('show')) {
@@ -370,6 +460,7 @@ RouletteWheel = Backbone.View.extend({
       }
     }
   },
+  */
 
   resetVideoList: function(videos) {
     var videoListEl = $('#videos-' + videos.playlistId),
@@ -420,13 +511,16 @@ VideoChooser = function() {
     initialize: function() {
       _.bindAll(this, 'populatePlaylists',
                       'setupBindings',
+                      'loadPlaylist',
                       'playRandomVideo',
                       'playVideo');
 
       this.player = new VideoPlayer();
       this.dials = new VideoDials();
 
-      $.getJSON('http://www.khanacademy.org/api/v1/playlists', this.populatePlaylists);
+      if (!debug) {
+        $.getJSON('http://www.khanacademy.org/api/v1/playlists', this.populatePlaylists);
+      }
 
       $('#rouletteBtn').click(this.playRandomVideo);
 
@@ -434,20 +528,65 @@ VideoChooser = function() {
     },
 
     populatePlaylists: function(data) {
-      this.playlists = new Playlists(data);
-      this.wheel     = new RouletteWheel({ collection: this.playlists });
+      this.playlists = new PlaylistCollection(data);
+      this.videos    = new VideoCollection();
+      this.controls  = new ControlsView();
+      this.controls.setPlaylistCollection(this.playlists)
+                   .setVideoCollection(this.videos);
       this.setupBindings();
     },
 
     setupBindings: function() {
-      this.playlists.bind('playlists:randomPlaylist', this.wheel.handleRandomPlaylist);
-      this.playlists.bind('playlists:randomVideo', this.wheel.handleRandomVideo);
+      eventsMediator.bind('controls:loadPlaylist', this.loadPlaylist);
+      eventsMediator.bind('controls:selectedVideo', this.playVideo);
+      eventsMediator.bind('chooser:showPlaylist', this.controls.videosView.showPlaylist);
+      this.playlists.bind('playlists:randomPlaylist', this.controls.handleRandomPlaylist);
+      this.playlists.bind('playlists:randomVideo', this.controls.handleRandomVideo);
       this.playlists.bind('playlists:randomVideo', this.player.playVideo);
-      this.playlists.bind('playlists:newVideoList', this.wheel.resetVideoList);
-      this.wheel.bind('wheel:loadPlaylist', this.playlists.loadPlaylist);
-      this.wheel.bind('wheel:selectedVideo', this.playVideo);
+      this.playlists.bind('playlists:newVideoList', this.controls.resetVideoList);
       this.dials.bind('dials:randomPlaylist', this.playlists.selectRandomPlaylist);
       this.dials.bind('dials:randomVideo', this.playlists.selectRandomVideo);
+    },
+
+    loadPlaylist: function(id) {
+      var videos;
+
+      videos = this.videos.where({ playlistId: id });
+
+      if (!_.isEmpty(videos)) {
+        // Video list was already downloaded
+        eventsMediator.trigger('chooser:showPlaylist', id);
+      }
+      else {
+        // Need to fetch video list
+        this.fetchVideosForPlaylist(id, function(v) {
+          eventsMediator.trigger('chooser:showPlaylist', id);
+        });
+      }
+    },
+
+    fetchVideosForPlaylist: function(playlistToFetch, callback) {
+      var playlist, videos, _this = this;
+
+      if (typeof playlistToFetch === 'string') {
+        playlist = this.playlists.getPlaylistById(playlistToFetch);
+      }
+      else {
+        // playlist was passed in directly
+        playlist = playlistToFetch;
+      }
+
+      $.getJSON('http://www.khanacademy.org/api/v1/playlists/' + playlist.id + '/videos', function(data) {
+        _.each(data, function(video) {
+          video.playlistId = playlist.id;
+        });
+
+        _this.videos.add(data);
+
+        if (callback) {
+          callback(videos);
+        }
+      });
     },
 
     playRandomVideo: function(evt) {
@@ -466,7 +605,7 @@ VideoChooser = function() {
           });
 
       this.player.playVideo(video);
-      this.wheel.populateVideoInfo(video);
+      this.controls.populateVideoInfo(video);
     }
   };
 
@@ -474,7 +613,9 @@ VideoChooser = function() {
 };
 
 $(function() {
-  var chooser = new VideoChooser();
+  var chooser;
+  _.extend(eventsMediator, Backbone.Events);
+  chooser = new VideoChooser();
   // debug stuff
   // ===========
   /*

@@ -1,0 +1,28 @@
+.transform-transition (@duration, @easing) {
+  -moz-transition:    -moz-transform @duration @easing;
+  -webkit-transition: -webkit-transform @duration @easing;
+  -o-transition:      -o-transform @duration @easing;
+  transition:         transform @duration @easing;
+}
+
+.transition (@property, @duration, @easing) {
+  -moz-transition:    @property @duration @easing;
+  -ms-transition:     @property @duration @easing;
+  -o-transition:      @property @duration @easing;
+  -webkit-transition: @property @duration @easing;
+  transition:         @property @duration @easing;
+}
+
+.rounded-corners (@radius) {
+  -moz-border-radius: @radius;
+  -webkit-border-radius: @radius;
+  -o-border-radius: @radius;
+  border-radius: @radius;
+}
+
+.rotate (@degrees) {
+  -moz-transform: rotate(@degrees);
+  -webkit-transform: rotate(@degrees);
+  -o-transform: rotate(@degrees);
+  transform: rotate(@degrees);
+}
