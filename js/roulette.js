@@ -419,7 +419,6 @@ VideoChooser = function() {
   var chooser = {
     initialize: function() {
       _.bindAll(this, 'populatePlaylists',
-                      'chooseVideo',
                       'setupBindings',
                       'playRandomVideo',
                       'playVideo');
@@ -438,15 +437,6 @@ VideoChooser = function() {
       this.playlists = new Playlists(data);
       this.wheel     = new RouletteWheel({ collection: this.playlists });
       this.setupBindings();
-    },
-
-    chooseVideo: function() {
-      var videoList = this.collection.playlistVideos[this.currPlaylist.title],
-          rand = Math.floor(Math.random() * videoList.length);
-
-      return videoList[rand];
-
-      // Set video title
     },
 
     setupBindings: function() {
