@@ -3,7 +3,7 @@
 @borderColor: #333;
 @headerSize: 16px;
 
-body, h1, h2, h3, h4, h5, h6, div, ul, ol, li {
+body, h1, h2, h3, h4, h5, h6, div, ul, ol, li, tr, td, a {
   border: 0;
   font-family: Helvetica, Arial;
   font-size: 10px;
@@ -15,6 +15,11 @@ body, h1, h2, h3, h4, h5, h6, div, ul, ol, li {
 body {
   padding-top: 50px;
   text-align: center;
+}
+
+a {
+  color: #069;
+  font-size: 14px;
 }
 
 #tv, #controls {
@@ -111,6 +116,7 @@ body {
 
 .control-panel {
   float: left;
+  font-size: 14px;
   margin-left: 35px;
   width: 250px;
 
@@ -124,7 +130,7 @@ body {
 
   .label {
     border: 3px solid @borderColor;
-    color: #999;
+    color: #333;
     font-size: @headerSize;
     margin: 10px 0;
     .rounded-corners(10px);
@@ -139,9 +145,7 @@ body {
 
     a {
       background-color: #fff;
-      color: #069;
       display: block;
-      font-size: 14px;
       padding: 3px;
       text-decoration: none;
 
@@ -158,13 +162,6 @@ body {
   min-height: 36px;
 }
 
-.wheelContainer {
-  background-color: #fff;
-  height: 250px;
-  overflow: hidden;
-  position: relative;
-}
-
 .dropdown {
   margin: 0;
   max-height: 300px;
@@ -173,46 +170,22 @@ body {
   .transition(top, 2s, ease-out);
 }
 
-li.wheelItem {
-  border-bottom: 1px solid #ccc;
-  cursor: pointer;
-  font-size: 24px;
-  padding: 15px 0;
-}
-
-li.wheelItem.selected,
-li.wheelItem:hover {
-  background-color: #FFE373;
-}
-
 .label {
   background-color: #ccc;
   font-size: 32px;
   padding: 5px;
 }
 
-.videoList {
-  display: none;
-}
-
-.videoList.selected {
-  display: block;
-}
-
-.infoTable {
-  font-size: 16px;
+.metadata,
+.metadata th,
+.metadata td
+{
+  font-size: 14px;
   text-align: left;
 }
 
-#videoInfo .wheelContainer {
-  height: 230px;
-  overflow: auto;
-  padding: 10px;
-}
-
-#videoInfo p {
-  font-size: 16px;
-  text-align: left;
+.metadata th {
+  padding-right: 10px;
 }
 
 #sliderBtn {
