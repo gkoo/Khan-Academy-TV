@@ -9,7 +9,6 @@ var ControlsView = Backbone.View.extend({
     this.videosView = new VideosView({ el: $('#videos') });
     this.categoriesView = new CategoriesView({ el: $('#categories') });
     this.subcategoriesView = new SubcategoriesView({ el: $('#subcategories') });
-    //this.subcategoriesView = new SubcategoriesView({ el: $('#subcategories') });
 
     this.$playlistEl           = $('#playlists');
     this.$videoEl              = $('#videos');
@@ -22,7 +21,6 @@ var ControlsView = Backbone.View.extend({
   render: function() {
     this.playlistsView.render();
     this.videosView.render();
-    //this.makeDraggable(dropdownEl, containerEl);
   },
 
   setCollections: function(obj) {

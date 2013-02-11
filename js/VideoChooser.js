@@ -3,11 +3,7 @@ var VideoChooser = function() {
 };
 
 VideoChooser.prototype = {
-  selectedPlaylistId: '',
-
-  categories: [],
-
-  subcategories: [],
+  selection: {}, // shows how far down the hierarchy the user has selected
 
   initialize: function() {
     _.bindAll(this);
@@ -25,17 +21,17 @@ VideoChooser.prototype = {
   },
 
   populatePlaylists: function(data) {
-    var trimmedData = [],
-        categories = {},
-        subcategories = {};
+    var trimmedData   = [],
+        categoryHash  = {},
+        categories    = [],
+        subcategories = [],
+        name;
 
     // Extract out only fields we need
     _.each(data, function(playlist) {
       var trimmedPlaylist = {},
           extendedSlug    = playlist.extended_slug,
           slugSplit       = extendedSlug ? extendedSlug.split('/') : '',
-          categoryName,
-          subcategoryName,
           i,
           len,
           cat,
@@ -47,24 +43,11 @@ VideoChooser.prototype = {
         trimmedPlaylist.subcategory = (slugSplit.length > 1) ? slugSplit[1] : trimmedPlaylist.category;
       }
 
-      // Do some formatting for human-readable name
-      categoryName = trimmedPlaylist.category.split('-');
-      categoryName[0] = categoryName[0][0].toUpperCase() + categoryName[0].substring(1);
-      subcategoryName = trimmedPlaylist.subcategory.split('-');
-      subcategoryName[0] = subcategoryName[0][0].toUpperCase() + subcategoryName[0].substring(1);
-
-      if (_.isEmpty(categories[trimmedPlaylist.category])) {
-        categories[trimmedPlaylist.category] = {
-          id: trimmedPlaylist.category,
-          title: categoryName.join(' ')
-        };
+      if (_.isEmpty(categoryHash[trimmedPlaylist.category])) {
+        categoryHash[trimmedPlaylist.category] = {};
       }
-      if (_.isEmpty(subcategories[trimmedPlaylist.subcategory])) {
-        subcategories[trimmedPlaylist.subcategory] = {
-          id: trimmedPlaylist.subcategory,
-          title: subcategoryName.join(' '),
-          categoryId: trimmedPlaylist.category
-        };
+      if (_.isEmpty(categoryHash[trimmedPlaylist.category][trimmedPlaylist.subcategory])) {
+        categoryHash[trimmedPlaylist.category][trimmedPlaylist.subcategory] = 1;
       }
 
       trimmedPlaylist.id = playlist.id.replace(/['"]/g, '');
@@ -74,12 +57,29 @@ VideoChooser.prototype = {
       trimmedData.push(trimmedPlaylist);
     });
 
-    for (cat in categories) {
-      this.categories.push(categories[cat]);
+    // Store categories and subcategories
+    for (cat in categoryHash) {
+      // Store category
+      name = cat.split('-');
+      name[0] = name[0][0].toUpperCase() + name[0].substring(1); // uppercase first letter in name
+      categories.push({
+        id: cat,
+        title: name.join(' ')
+      });
+
+      // Store subcategory
+      for (subcat in categoryHash[cat]) {
+        name = subcat.split('-');
+        name[0] = name[0][0].toUpperCase() + name[0].substring(1); // uppercase first letter in name
+        subcategories.push({
+          id: subcat,
+          title: name.join(' '),
+          categoryId: cat
+        });
+      }
     }
-    for (subcat in subcategories) {
-      this.subcategories.push(subcategories[subcat]);
-    }
+    this.categories = new Backbone.Collection(categories);
+    this.subcategories = new Backbone.Collection(subcategories);
 
     this.playlists = new PlaylistCollection(trimmedData);
     this.videos    = new VideoCollection();
@@ -97,7 +97,9 @@ VideoChooser.prototype = {
     eventsMediator.bind('controls:loadPlaylist', this.loadPlaylist);
     eventsMediator.bind('controls:playVideo', this.playVideo);
     eventsMediator.bind('chooser:showPlaylist', this.controls.videosView.showPlaylist);
+    eventsMediator.bind('controls:loadCategory', this.loadCategory);
     eventsMediator.bind('controls:loadCategory', this.controls.subcategoriesView.loadCategory);
+
     this.playlists.bind('playlists:randomPlaylist', this.controls.handleRandomPlaylist);
     this.playlists.bind('playlists:randomVideo', this.controls.handleRandomVideo);
     this.playlists.bind('playlists:randomVideo', this.player.playVideo);
@@ -106,11 +108,15 @@ VideoChooser.prototype = {
     this.dials.bind('dials:randomVideo', this.playlists.selectRandomVideo);
   },
 
+  loadCategory: function(cat) {
+    this.selection.category = cat;
+  },
+
   loadPlaylist: function(id) {
     var videos;
 
     videos = this.videos.where({ playlistId: id });
-    this.selectedPlaylistId = id;
+    this.selection.playlist = id;
 
     if (!_.isEmpty(videos)) {
       // Video list was already downloaded

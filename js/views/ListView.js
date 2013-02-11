@@ -11,21 +11,52 @@ var ListView = Backbone.View.extend({
   },
 
   render: function() {
-    var html = '',
+    var id          = this.selectionId,
+        $dropdownEl = this.$el.children('.dropdown'),
+        html        = '',
         models,
         i,
         len;
 
     if (_.isEmpty(this.collection)) {
-      this.$el.children('.dropdown').hide();
+      $dropdownEl.hide();
     }
-    else {
+    else if (!this.selectionObj) {
+      // No selectionId to check for, so just show everything.
       models = this.collection.models;
       for (i = 0, len = models.length; i < len; ++i) {
         html += this.template(models[i].toJSON());
       }
-      this.$el.children('.dropdown').html(html).show();
+      $dropdownEl.html(html).show();
     }
+    else if (id) {
+      // We have a selection to filter by!
+      $items = this.$el.find('.for-' + id);
+      if ($items.length === 0) {
+        // Need to create DOM elements
+        models = this.collection.where(this.selectionObj);
+
+        if (_.isEmpty(models)) {
+          throw "No models found for current selection!";
+        }
+
+        for (i = 0, len = models.length; i < len; ++i) {
+          html += this.template(models[i].toJSON());
+        }
+        this.$el.find('.dropdown-item').hide();
+        $dropdownEl.append($(html));
+      }
+      else {
+        this.$el.find('.dropdown-item').not($items).hide();
+        $items.show();
+      }
+      $dropdownEl.show();
+    }
+    else {
+      // No selection to filter by. Hide!
+      $dropdownEl.hide();
+    }
+    return this;
   },
 
   handleRandomItem: function(id, type, highlight) {

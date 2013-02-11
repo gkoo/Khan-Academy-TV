@@ -1,43 +1,18 @@
 var SubcategoriesView = ListView.extend({
-  template: _.template('<li id="subcategory-<%= id %>" class="subcategory-item for-category-<%= categoryId %>"><a href="#"><%= title %></a></li>'),
-
-  // This render should only be called once on application load.
-  render: function() {
-    var id = this.selectedCategoryId,
-        html  = '',
-        $dropdownEl = this.$el.children('.dropdown'),
-        $subcategoryItems,
-        subcategories;
-
-    if (id) {
-      $subcategoryItems = this.$el.find('.for-category-' + id);
-
-      if ($subcategoryItems.length === 0) {
-        subcategories = _.where(this.collection, { categoryId: id });
-
-        if (_.isEmpty(subcategories)) {
-          throw "No subcategories found for category " + id + "!";
-        }
-
-        for (i = 0, len = subcategories.length; i < len; ++i) {
-          html += this.template(subcategories[i]);
-        }
-        this.$el.find('.subcategory-item').hide();
-        $dropdownEl.append($(html));
-      }
-      else {
-        this.$el.find('.subcategory-item').not($subcategoryItems).hide();
-        $subcategoryItems.show();
-      }
-    }
-
-  },
+  template: _.template('<li id="subcategory-<%= id %>" class="dropdown-item for-<%= categoryId %>"><a href="#"><%= title %></a></li>'),
 
   loadCategory: function(categoryId) {
-    this.selectedCategoryId = categoryId;
+    this.selectionObj.categoryId = categoryId;
+    this.selectionId = categoryId;
     this.render();
   },
 
   handleClick: function(evt) {
-  }
+  },
+
+  selectionObj: {
+    categoryId: ''
+  },
+
+  selectionId: '' // used for the "for-" class
 });
