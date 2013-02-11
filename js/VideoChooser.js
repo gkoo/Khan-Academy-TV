@@ -5,6 +5,10 @@ var VideoChooser = function() {
 VideoChooser.prototype = {
   selectedPlaylistId: '',
 
+  categories: [],
+
+  subcategories: [],
+
   initialize: function() {
     _.bindAll(this);
 
@@ -21,16 +25,71 @@ VideoChooser.prototype = {
   },
 
   populatePlaylists: function(data) {
+    var trimmedData = [],
+        categories = {},
+        subcategories = {};
+
+    // Extract out only fields we need
     _.each(data, function(playlist) {
-      var escapedId = playlist.id.replace(/['"]/g, '');
-      playlist.url_id = playlist.id;
-      playlist.id = escapedId;
+      var trimmedPlaylist = {},
+          extendedSlug    = playlist.extended_slug,
+          slugSplit       = extendedSlug ? extendedSlug.split('/') : '',
+          categoryName,
+          subcategoryName,
+          i,
+          len,
+          cat,
+          subcat;
+
+      // Infer category/subcategory from extended_slug.
+      if (slugSplit) {
+        trimmedPlaylist.category = slugSplit[0];
+        trimmedPlaylist.subcategory = (slugSplit.length > 1) ? slugSplit[1] : trimmedPlaylist.category;
+      }
+
+      // Do some formatting for human-readable name
+      categoryName = trimmedPlaylist.category.split('-');
+      categoryName[0] = categoryName[0][0].toUpperCase() + categoryName[0].substring(1);
+      subcategoryName = trimmedPlaylist.subcategory.split('-');
+      subcategoryName[0] = subcategoryName[0][0].toUpperCase() + subcategoryName[0].substring(1);
+
+      if (_.isEmpty(categories[trimmedPlaylist.category])) {
+        categories[trimmedPlaylist.category] = {
+          id: trimmedPlaylist.category,
+          title: categoryName.join(' ')
+        };
+      }
+      if (_.isEmpty(subcategories[trimmedPlaylist.subcategory])) {
+        subcategories[trimmedPlaylist.subcategory] = {
+          id: trimmedPlaylist.subcategory,
+          title: subcategoryName.join(' '),
+          categoryId: trimmedPlaylist.category
+        };
+      }
+
+      trimmedPlaylist.id = playlist.id.replace(/['"]/g, '');
+      trimmedPlaylist.url_id = playlist.id;
+      trimmedPlaylist.title = playlist.title;
+
+      trimmedData.push(trimmedPlaylist);
     });
-    this.playlists = new PlaylistCollection(data);
+
+    for (cat in categories) {
+      this.categories.push(categories[cat]);
+    }
+    for (subcat in subcategories) {
+      this.subcategories.push(subcategories[subcat]);
+    }
+
+    this.playlists = new PlaylistCollection(trimmedData);
     this.videos    = new VideoCollection();
     this.controls  = new ControlsView();
-    this.controls.setPlaylistCollection(this.playlists)
-                 .setVideoCollection(this.videos);
+    this.controls.setCollections({
+      playlists: this.playlists,
+      videos: this.videos,
+      categories: this.categories,
+      subcategories: this.subcategories
+    });
     this.setupBindings();
   },
 
@@ -38,6 +97,7 @@ VideoChooser.prototype = {
     eventsMediator.bind('controls:loadPlaylist', this.loadPlaylist);
     eventsMediator.bind('controls:playVideo', this.playVideo);
     eventsMediator.bind('chooser:showPlaylist', this.controls.videosView.showPlaylist);
+    eventsMediator.bind('controls:loadCategory', this.controls.subcategoriesView.loadCategory);
     this.playlists.bind('playlists:randomPlaylist', this.controls.handleRandomPlaylist);
     this.playlists.bind('playlists:randomVideo', this.controls.handleRandomVideo);
     this.playlists.bind('playlists:randomVideo', this.player.playVideo);

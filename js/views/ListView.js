@@ -3,7 +3,6 @@
  */
 var ListView = Backbone.View.extend({
   initialize: function() {
-    _.extend(this, Backbone.Events);
     _.bindAll(this);
   },
 
