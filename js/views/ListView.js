@@ -102,5 +102,13 @@ var ListView = Backbone.View.extend({
 
   setTemplate: function(template) {
     this.template = template;
-  }
+  },
+
+  // Define the higher-level selections in this object.
+  // Type: Object<String, String>
+  selectionObj: undefined,
+
+  // Define the current level selection id here.
+  // Type: String
+  selectionId: undefined
 });

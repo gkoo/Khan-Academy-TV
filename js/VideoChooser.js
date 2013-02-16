@@ -6,14 +6,21 @@ VideoChooser.prototype = {
   selection: {}, // shows how far down the hierarchy the user has selected
 
   initialize: function() {
+    var playlistApiUrl;
     _.bindAll(this);
 
     this.player = new VideoPlayerView();
     this.dials = new VideoDialsView();
 
     if (!debug) {
-      $.getJSON('http://www.khanacademy.org/api/v1/playlists', this.populatePlaylists);
+      playlistApiUrl = 'http://www.khanacademy.org/api/v1/playlists';
     }
+    else {
+      var location = window.location.href;
+      playlistApiUrl = location.substring(0, location.lastIndexOf('/')+1) + 'playlists.json';
+    }
+
+    $.getJSON(playlistApiUrl, this.populatePlaylists);
 
     $('#rouletteBtn').click(this.playRandomVideo);
 
@@ -39,15 +46,15 @@ VideoChooser.prototype = {
 
       // Infer category/subcategory from extended_slug.
       if (slugSplit) {
-        trimmedPlaylist.category = slugSplit[0];
-        trimmedPlaylist.subcategory = (slugSplit.length > 1) ? slugSplit[1] : trimmedPlaylist.category;
+        trimmedPlaylist.categoryId = slugSplit[0];
+        trimmedPlaylist.subcategoryId = (slugSplit.length > 1) ? slugSplit[1] : trimmedPlaylist.categoryId;
       }
 
-      if (_.isEmpty(categoryHash[trimmedPlaylist.category])) {
-        categoryHash[trimmedPlaylist.category] = {};
+      if (_.isEmpty(categoryHash[trimmedPlaylist.categoryId])) {
+        categoryHash[trimmedPlaylist.categoryId] = {};
       }
-      if (_.isEmpty(categoryHash[trimmedPlaylist.category][trimmedPlaylist.subcategory])) {
-        categoryHash[trimmedPlaylist.category][trimmedPlaylist.subcategory] = 1;
+      if (_.isEmpty(categoryHash[trimmedPlaylist.categoryId][trimmedPlaylist.subcategoryId])) {
+        categoryHash[trimmedPlaylist.categoryId][trimmedPlaylist.subcategoryId] = 1;
       }
 
       trimmedPlaylist.id = playlist.id.replace(/['"]/g, '');
@@ -71,11 +78,14 @@ VideoChooser.prototype = {
       for (subcat in categoryHash[cat]) {
         name = subcat.split('-');
         name[0] = name[0][0].toUpperCase() + name[0].substring(1); // uppercase first letter in name
-        subcategories.push({
-          id: subcat,
-          title: name.join(' '),
-          categoryId: cat
-        });
+        // Correct for 'core-finance' subcategory existing in both 'finance-economics' and 'science' categories.
+        if (subcat !== 'core-finance' || cat === 'finance-economics') {
+          subcategories.push({
+            id: subcat,
+            title: name.join(' '),
+            categoryId: cat
+          });
+        }
       }
     }
     this.categories = new Backbone.Collection(categories);
@@ -94,11 +104,19 @@ VideoChooser.prototype = {
   },
 
   setupBindings: function() {
-    eventsMediator.bind('controls:loadPlaylist', this.loadPlaylist);
     eventsMediator.bind('controls:playVideo', this.playVideo);
-    eventsMediator.bind('chooser:showPlaylist', this.controls.videosView.showPlaylist);
+
     eventsMediator.bind('controls:loadCategory', this.loadCategory);
-    eventsMediator.bind('controls:loadCategory', this.controls.subcategoriesView.loadCategory);
+    eventsMediator.bind('chooser:loadCategory', this.controls.subcategoriesView.loadCategory);
+    eventsMediator.bind('chooser:loadCategory', this.controls.playlistsView.reload);
+    eventsMediator.bind('chooser:loadCategory', this.controls.videosView.reload);
+
+    eventsMediator.bind('controls:loadSubcategory', this.loadSubcategory);
+    eventsMediator.bind('chooser:loadSubcategory', this.controls.playlistsView.loadSubcategory);
+    eventsMediator.bind('chooser:loadSubcategory', this.controls.videosView.reload);
+
+    eventsMediator.bind('controls:loadPlaylist', this.loadPlaylist);
+    eventsMediator.bind('chooser:loadPlaylist', this.controls.videosView.loadPlaylist);
 
     this.playlists.bind('playlists:randomPlaylist', this.controls.handleRandomPlaylist);
     this.playlists.bind('playlists:randomVideo', this.controls.handleRandomVideo);
@@ -109,23 +127,40 @@ VideoChooser.prototype = {
   },
 
   loadCategory: function(cat) {
-    this.selection.category = cat;
+    var categoryChanged = this.selection.categoryId !== cat,
+        subcat = (categoryChanged ? undefined : this.selection.subcategoryId),
+        playlist = (categoryChanged ? undefined : this.selection.playlistId);
+
+    this.selection.categoryId    = cat;
+    this.selection.subcategoryId = subcat;
+    this.selection.playlistId    = playlist;
+    eventsMediator.trigger('chooser:loadCategory', this.selection);
   },
 
-  loadPlaylist: function(id) {
-    var videos;
+  loadSubcategory: function(subcat) {
+    var subcategoryChanged = this.selection.subcategoryId !== cat,
+        playlist = (subcategoryChanged ? undefined : this.selection.playlistId);
 
-    videos = this.videos.where({ playlistId: id });
-    this.selection.playlist = id;
+    this.selection.subcategoryId = subcat;
+    this.selection.playlistId    = playlist;
+    eventsMediator.trigger('chooser:loadSubcategory', this.selection);
+  },
+
+  loadPlaylist: function(playlist) {
+    var playlistChanged = this.selection.playlistId !== playlist,
+        _this = this;
+
+    videos = this.videos.where({ playlistId: playlist });
+    this.selection.playlistId = playlist;
 
     if (!_.isEmpty(videos)) {
       // Video list was already downloaded
-      eventsMediator.trigger('chooser:showPlaylist', id);
+      eventsMediator.trigger('chooser:loadPlaylist', this.selection);
     }
     else {
       // Need to fetch video list
-      this.fetchVideosForPlaylist(id, function(v) {
-        eventsMediator.trigger('chooser:showPlaylist', id);
+      this.fetchVideosForPlaylist(playlist, function(v) {
+        eventsMediator.trigger('chooser:loadPlaylist', _this.selection);
       });
     }
   },
@@ -134,7 +169,7 @@ VideoChooser.prototype = {
     var playlist, videos, _this = this;
 
     if (typeof playlistToFetch === 'string') {
-      playlist = this.playlists.getPlaylistById(playlistToFetch);
+      playlist = this.playlists.get(playlistToFetch);
     }
     else {
       // playlist was passed in directly
@@ -142,11 +177,22 @@ VideoChooser.prototype = {
     }
 
     $.getJSON('http://www.khanacademy.org/api/v1/playlists/' + playlist.get('url_id') + '/videos', function(data) {
+      var trimmedVideos = [];
       _.each(data, function(video) {
-        video.playlistId = playlist.id;
+        trimmedVideos.push({
+          readable_id:   video.readable_id,
+          youtube_id:    video.youtube_id,
+          title:         video.title,
+          description:   video.description,
+          views:         video.views,
+          ka_url:        video.ka_url,
+          categoryId:    _this.selection.categoryId,
+          subcategoryId: _this.selection.subcategoryId,
+          playlistId:    playlist.id
+        });
       });
 
-      _this.videos.add(data);
+      _this.videos.add(trimmedVideos);
 
       if (callback) {
         callback(videos);

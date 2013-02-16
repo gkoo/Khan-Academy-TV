@@ -1,5 +1,5 @@
 var VideosView = ListView.extend({
-  template: _.template('<li value="video-<%= readable_id %>" data-youtube-id="<%= youtube_id %>" class="video for-playlist-<%= playlistId %>"><a href="#"><%= title %></a></li>'),
+  template: _.template('<li value="video-<%= readable_id %>" data-youtube-id="<%= youtube_id %>" class="dropdown-item for-playlist-<%= playlistId %>"><a href="#"><%= title %></a></li>'),
 
   handleClick: function(evt) {
     // time to play a video!
@@ -8,48 +8,33 @@ var VideosView = ListView.extend({
     eventsMediator.trigger('controls:playVideo', youtube_id);
   },
 
-  render: function() {
-    var id = this.selectedPlaylistId,
-        $dropdownEl = this.$el.find('.dropdown'),
-        html = '',
-        $videoItems,
-        videoModels,
-        i,
-        len;
-
-    if (id) {
-      $videoItems = this.$el.find('.for-playlist-' + id);
-
-      if ($videoItems.length === 0) {
-        // Need to create DOM elements
-        videoModels = this.collection.where({ playlistId: id });
-
-        if (_.isEmpty(videoModels)) {
-          throw "No videos found for playlist " + id;
-        }
-
-        for (i = 0, len = videoModels.length; i < len; ++i) {
-          html += this.template(videoModels[i].toJSON());
-        }
-        this.$el.find('.video').hide();
-        $dropdownEl.append($(html));
-      }
-      else {
-        // DOM elements already created. Just need to show() them.
-        this.$el.find('.video').not($videoItems).hide();
-        $videoItems.show();
-      }
-
-      $dropdownEl.show();
+  // Check if any ancestors have changed. If so, hide dropdown.
+  reload: function(selectionObj) {
+    // Clear out the playlist view if we're changing categories
+    if (selectionObj.categoryId !== this.selectionObj.categoryId ||
+        selectionObj.subcategoryId !== this.selectionObj.subcategoryId) {
+      this.selectionObj.categoryId = '';
+      this.selectionObj.subcategoryId = '';
+      this.selectionObj.playlistId = '';
+      this.selectionId = '';
+      this.render();
     }
-    else {
-      $dropdownEl.hide();
-    }
-    return this;
   },
 
-  showPlaylist: function(id) {
-    this.selectedPlaylistId = id;
+  loadPlaylist: function(selectionObj) {
+    this.selectionObj.categoryId = selectionObj.categoryId;
+    this.selectionObj.subcategoryId = selectionObj.subcategoryId;
+    this.selectionObj.playlistId = selectionObj.playlistId;
+    this.selectionId = selectionObj.playlistId;
     this.render();
-  }
+  },
+
+  selectionObj: {
+    categoryId: '',
+    subcategoryId: '',
+    playlistId: ''
+  },
+
+  selectionId: ''
+
 });

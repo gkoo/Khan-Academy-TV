@@ -4,7 +4,6 @@ var PlaylistCollection = Backbone.Collection.extend({
     _.bindAll(this, 'getRandomPlaylist',
                     'selectRandomPlaylist',
                     'selectRandomVideo',
-                    'getPlaylistById',
                     'loadPlaylist',
                     'fetchVideosForPlaylist');
 
@@ -50,12 +49,6 @@ var PlaylistCollection = Backbone.Collection.extend({
       videos.chooseRandomVideo();
     }
 
-  },
-
-  getPlaylistById: function(id) {
-    return this.find(function(pl) {
-      return pl.get('id') === id;
-    });
   },
 
   loadPlaylist: function(id) {

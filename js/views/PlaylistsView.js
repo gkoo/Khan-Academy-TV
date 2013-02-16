@@ -1,5 +1,5 @@
 var PlaylistsView = ListView.extend({
-  template: _.template('<li id="playlist-<%= id %>" class="playlist-item"><a href="#"><%= title %></a></li>'),
+  template: _.template('<li id="playlist-<%= id %>" class="dropdown-item"><a href="#"><%= title %></a></li>'),
 
   handleClick: function(evt) {
     var $target = $(evt.target),
@@ -7,10 +7,33 @@ var PlaylistsView = ListView.extend({
         id;
 
     evt.preventDefault();
-    if ($target[0].nodeName === 'A' && $parent.hasClass('playlist-item')) {
+    if ($target[0].nodeName === 'A') {
       id = $parent.attr('id').substring(9);
-      //this.handleRandomItem(id, 'playlist', true);
       eventsMediator.trigger('controls:loadPlaylist', id);
     }
   },
+
+  reload: function(selectionObj) {
+    // Clear out the playlist view if we're changing categories
+    if (selectionObj.categoryId !== this.selectionObj.categoryId) {
+      this.selectionObj.categoryId = '';
+      this.selectionObj.subcategoryId = '';
+      this.selectionId = '';
+      this.render();
+    }
+  },
+
+  loadSubcategory: function(selectionObj) {
+    this.selectionObj.categoryId = selectionObj.categoryId;
+    this.selectionObj.subcategoryId = selectionObj.subcategoryId;
+    this.selectionId = selectionObj.subcategoryId;
+    this.render();
+  },
+
+  selectionObj: {
+    categoryId: '',
+    subcategoryId: ''
+  },
+
+  selectionId: '' // used for the "for-" class
 });
