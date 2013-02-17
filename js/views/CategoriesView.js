@@ -1,15 +1,12 @@
 var CategoriesView = ListView.extend({
-  template: _.template('<li id="category-<%= id %>" class="category-item"><a href="#"><%= title %></a></li>'),
+  template: _.template('<li id="category-<%= id %>" class="dropdown-item"><a href="#"><%= title %></a></li>'),
 
   handleClick: function(evt) {
-    var $target = $(evt.target),
-        $parent = $target.parent(),
-        id;
+    this.clickHelper(evt, 'controls:loadCategory');
+  },
 
-    evt.preventDefault();
-    if ($target[0].nodeName === 'A') {
-      id = $parent.attr('id').substring(9);
-      eventsMediator.trigger('controls:loadCategory', id);
-    }
-  }
+  // No selection hierarchy necessary for this view.
+  selectionObj: undefined,
+
+  selectionId: undefined
 });

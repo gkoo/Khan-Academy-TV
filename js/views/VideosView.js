@@ -3,9 +3,14 @@ var VideosView = ListView.extend({
 
   handleClick: function(evt) {
     // time to play a video!
-    var $listItem = $(evt.target).parent();
-    youtube_id = $listItem.attr('data-youtube-id');
+    var $target = $(evt.target),
+        $parent = $target.parent();
+    youtube_id = $parent.attr('data-youtube-id');
     eventsMediator.trigger('controls:playVideo', youtube_id);
+
+    this.$el.find('.dropdown-item a.selected').removeClass('selected');
+    $target.addClass('selected');
+    evt.preventDefault();
   },
 
   // Check if any ancestors have changed. If so, hide dropdown.
@@ -29,12 +34,11 @@ var VideosView = ListView.extend({
     this.render();
   },
 
-  selectionObj: {
-    categoryId: '',
-    subcategoryId: '',
-    playlistId: ''
-  },
+  // Define the higher-level selections in this object.
+  // Type: Object<String, String>
+  selectionObj: {},
 
+  // Define the current level selection id here.
+  // Type: String
   selectionId: ''
-
 });

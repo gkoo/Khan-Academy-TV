@@ -10,6 +10,18 @@ var ListView = Backbone.View.extend({
     'click': 'handleClick'
   },
 
+  clickHelper: function(evt, eventName) {
+    var $target = $(evt.target),
+        $parent = $target.parent(),
+        id = $parent.attr('id');
+
+    id = id.substring(id.indexOf('-')+1);
+    eventsMediator.trigger(eventName, id);
+    this.$el.find('.dropdown-item a.selected').removeClass('selected');
+    $target.addClass('selected');
+    evt.preventDefault();
+  },
+
   render: function() {
     var id          = this.selectionId,
         $dropdownEl = this.$el.children('.dropdown'),
@@ -19,7 +31,7 @@ var ListView = Backbone.View.extend({
         len;
 
     if (_.isEmpty(this.collection)) {
-      $dropdownEl.hide();
+      $dropdownEl.children().hide();
     }
     else if (!this.selectionObj) {
       // No selectionId to check for, so just show everything.
@@ -54,7 +66,7 @@ var ListView = Backbone.View.extend({
     }
     else {
       // No selection to filter by. Hide!
-      $dropdownEl.hide();
+      $dropdownEl.children().hide();
     }
     return this;
   },
@@ -102,13 +114,5 @@ var ListView = Backbone.View.extend({
 
   setTemplate: function(template) {
     this.template = template;
-  },
-
-  // Define the higher-level selections in this object.
-  // Type: Object<String, String>
-  selectionObj: undefined,
-
-  // Define the current level selection id here.
-  // Type: String
-  selectionId: undefined
+  }
 });

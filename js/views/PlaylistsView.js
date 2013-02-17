@@ -2,15 +2,7 @@ var PlaylistsView = ListView.extend({
   template: _.template('<li id="playlist-<%= id %>" class="dropdown-item"><a href="#"><%= title %></a></li>'),
 
   handleClick: function(evt) {
-    var $target = $(evt.target),
-        $parent = $target.parent(),
-        id;
-
-    evt.preventDefault();
-    if ($target[0].nodeName === 'A') {
-      id = $parent.attr('id').substring(9);
-      eventsMediator.trigger('controls:loadPlaylist', id);
-    }
+    this.clickHelper(evt, 'controls:loadPlaylist');
   },
 
   reload: function(selectionObj) {
@@ -30,10 +22,11 @@ var PlaylistsView = ListView.extend({
     this.render();
   },
 
-  selectionObj: {
-    categoryId: '',
-    subcategoryId: ''
-  },
+  // Define the higher-level selections in this object.
+  // Type: Object<String, String>
+  selectionObj: {},
 
-  selectionId: '' // used for the "for-" class
+  // Define the current level selection id here.
+  // Type: String
+  selectionId: ''
 });

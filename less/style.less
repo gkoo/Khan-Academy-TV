@@ -22,15 +22,26 @@ a {
   font-size: 14px;
 }
 
+#main, #controls {
+  width: 1095px;
+}
+
+#main {
+  margin: 0 auto 50px;
+}
+
+#tv, #videoInfo {
+  float: left;
+}
+
 #tv, #controls {
   .rounded-corners(10px);
 }
 
 #tv {
   background-color: #333;
-  margin: 0 auto 50px;
   padding: 20px 0 20px 20px;
-  width: 800px;
+  width: 825px;
 }
 
 #dials {
@@ -97,6 +108,11 @@ a {
   text-decoration: none;
 }
 
+#videoInfo {
+  padding-left: 50px;
+  width: 200px;
+}
+
 #sidePanel {
   float: right;
   width: 90px;
@@ -108,17 +124,16 @@ a {
 }
 
 #controls {
-  /*background-color: #A62F00;*/
+  clear: left;
   margin: 0 auto 40px;
   text-align: center;
-  width: 1390px; /* 250*5 + 35*4 */
 }
 
 .control-panel {
   float: left;
   font-size: 14px;
-  margin-left: 35px;
-  width: 250px;
+  margin-left: 15px;
+  width: 200px;
 
   &:nth-child(1) {
     margin: 0;
@@ -129,14 +144,16 @@ a {
   }
 
   .label {
-    border: 3px solid @borderColor;
     color: #333;
     font-size: @headerSize;
-    margin: 10px 0;
-    .rounded-corners(10px);
+    margin: 10px 0 0;
   }
 
   ul {
+    background-color: #eee;
+    height: 310px;
+    padding: 10px 0;
+    margin: 0;
     overflow: auto;
 
     &.show {
@@ -144,12 +161,12 @@ a {
     }
 
     a {
-      background-color: #fff;
+      background-color: #eee;
       display: block;
-      padding: 3px;
+      padding: 5px 10px;
       text-decoration: none;
 
-      &:hover {
+      &:hover, &.selected {
         background-color: #069;
         color: #fff;
       }
@@ -160,14 +177,6 @@ a {
 .label {
   line-height: 36px;
   min-height: 36px;
-}
-
-.dropdown {
-  margin: 0;
-  max-height: 300px;
-  width: 100%;
-
-  .transition(top, 2s, ease-out);
 }
 
 .label {

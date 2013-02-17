@@ -7,27 +7,31 @@
 </head>
 
 <body>
-  <div id="tv">
-    <div id="sidePanel">
-      <div id="dials">
-        <!--
-        <a id="playlistDial" class="dial" title="Choose a random playlist">
-          <div class="spinnerThingy">
-            <div class="spinnerThingyInner"></div>
-          </div>
-        </a>
-        -->
-        <a id="videoDial" class="dial" title="Choose a random video">
-          <div class="spinnerThingy">
-            <div class="spinnerThingyInner"></div>
-          </div>
-        </a>
+  <div id="main">
+    <div id="tv">
+      <div id="sidePanel">
+        <div id="dials">
+          <!--
+          <a id="playlistDial" class="dial" title="Choose a random playlist">
+            <div class="spinnerThingy">
+              <div class="spinnerThingyInner"></div>
+            </div>
+          </a>
+          -->
+          <a id="videoDial" class="dial" title="Choose a random video">
+            <div class="spinnerThingy">
+              <div class="spinnerThingyInner"></div>
+            </div>
+          </a>
+        </div>
       </div>
+      <div id="videoPlayerContainer"></div>
+      <h2 id="tvTitle"><a href="http://www.khanacademy.org" title="Go to the Khan Academy website">Khan Academy</a></h2>
     </div>
-    <div id="videoPlayerContainer"></div>
-    <h2 id="tvTitle"><a href="http://www.khanacademy.org" title="Go to the Khan Academy website">Khan Academy</a></h2>
+    <div id="videoInfo">
+      <!--<div class="metadata"></div>-->
+      <div class="metadata"><table class="infoTable">  <tbody><tr valign="top"><th>Title</th><td>Acceleration</td></tr>  <tr valign="top"><th>Desc</th><td>Calculating the acceleration of a Porshe</td></tr>  <tr valign="top"><th>Views</th><td>183876</td></tr></tbody></table><p><a href="http://www.khanacademy.org/video/acceleration">View this video on the Khan Academy website</a></p></div>    </div>
   </div>
-  <!--<a href="#" id="rouletteBtn">Random Video</a>-->
   <div id="controls">
     <div id="categories" class="control-panel">
       <h2 class="label">Categories</h2>
@@ -44,10 +48,6 @@
     <div id="videos" class="control-panel">
       <h2 class="label">Videos</h2>
       <ul class="dropdown"></ul>
-    </div>
-    <div id="videoInfo" class="control-panel">
-      <h2 class="label">Video</h2>
-      <div class="metadata"></div>
     </div>
   </div>
   <script type="text/javascript" src="js/lib/jquery-1.9.1.min.js"></script>

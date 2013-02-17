@@ -3,25 +3,20 @@ var SubcategoriesView = ListView.extend({
 
   loadCategory: function(selectionObj) {
     this.selectionObj.categoryId = selectionObj.categoryId;
+    this.selectionObj.subcategoryId = selectionObj.subcategoryId;
     this.selectionId = selectionObj.categoryId;
     this.render();
   },
 
   handleClick: function(evt) {
-    var $target = $(evt.target),
-        $parent = $target.parent(),
-        id;
-
-    evt.preventDefault();
-    if ($target[0].nodeName === 'A') {
-      id = $parent.attr('id').substring(12);
-      eventsMediator.trigger('controls:loadSubcategory', id);
-    }
+    this.clickHelper(evt, 'controls:loadSubcategory');
   },
 
-  selectionObj: {
-    categoryId: ''
-  },
+  // Define the higher-level selections in this object.
+  // Type: Object<String, String>
+  selectionObj: {},
 
-  selectionId: '' // used for the "for-" class
+  // Define the current level selection id here.
+  // Type: String
+  selectionId: ''
 });
