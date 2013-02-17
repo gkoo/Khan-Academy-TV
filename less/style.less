@@ -2,8 +2,9 @@
 
 @borderColor: #333;
 @headerSize: 16px;
+@panelBgColor: #eee;
 
-body, h1, h2, h3, h4, h5, h6, div, ul, ol, li, tr, td, a {
+body, h1, h2, h3, h4, h5, h6, div, ul, ol, li, tr, td, a, p {
   border: 0;
   font-family: Helvetica, Arial;
   font-size: 10px;
@@ -109,8 +110,23 @@ a {
 }
 
 #videoInfo {
-  padding-left: 50px;
+  background-color: @panelBgColor;
+  text-align: left;
   width: 200px;
+
+  .content {
+    padding: 10px;
+  }
+
+  p {
+    font-size: 14px;
+    padding-bottom: 10px;
+  }
+
+  .label {
+    margin: 0;
+    text-align: center;
+  }
 }
 
 #sidePanel {
@@ -150,7 +166,7 @@ a {
   }
 
   ul {
-    background-color: #eee;
+    background-color: @panelBgColor;
     height: 310px;
     padding: 10px 0;
     margin: 0;
@@ -161,7 +177,7 @@ a {
     }
 
     a {
-      background-color: #eee;
+      background-color: @panelBgColor;
       display: block;
       padding: 5px 10px;
       text-decoration: none;
@@ -175,45 +191,7 @@ a {
 }
 
 .label {
-  line-height: 36px;
-  min-height: 36px;
-}
-
-.label {
   background-color: #ccc;
   font-size: 32px;
-  padding: 5px;
-}
-
-.metadata,
-.metadata th,
-.metadata td
-{
-  font-size: 14px;
-  text-align: left;
-}
-
-.metadata th {
-  padding-right: 10px;
-}
-
-#sliderBtn {
-  background-color: #ccc;
-  border: 1px solid #000;
-  border-top: 0;
-  display: block;
-  margin: 10px auto;
-  width: 50px;
-}
-
-#sliderBtn:hover {
-  background-color: #fff;
-}
-
-#sliderBtn img {
-  width: 10px;
-  height: 22px;
-
-  .rotate(90deg);
-  .transform-transition(1s, ease-out);
+  padding: 10px 5px;
 }

@@ -6,7 +6,8 @@ VideoChooser.prototype = {
   selection: {}, // shows how far down the hierarchy the user has selected
 
   initialize: function() {
-    var playlistApiUrl;
+    var playlistApiUrl,
+        location;
     _.bindAll(this);
 
     this.player = new VideoPlayerView();
@@ -16,7 +17,7 @@ VideoChooser.prototype = {
       playlistApiUrl = 'http://www.khanacademy.org/api/v1/playlists';
     }
     else {
-      var location = window.location.href;
+      location = window.location.href;
       playlistApiUrl = location.substring(0, location.lastIndexOf('/')+1) + 'playlists.json';
     }
 
@@ -94,6 +95,7 @@ VideoChooser.prototype = {
     this.playlists = new PlaylistCollection(trimmedData);
     this.videos    = new VideoCollection();
     this.controls  = new ControlsView();
+    this.videoInfo = new VideoInfoView();
     this.controls.setCollections({
       playlists: this.playlists,
       videos: this.videos,
@@ -221,6 +223,6 @@ VideoChooser.prototype = {
     if (video.length === 0) {
       throw "No video found for this Youtube id. Something is wrong!"
     }
-    this.controls.populateVideoInfo(video[0]);
+    this.videoInfo.render(video[0].toJSON());
   }
 };
