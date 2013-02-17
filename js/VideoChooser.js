@@ -25,6 +25,11 @@ VideoChooser.prototype = {
 
     $('#rouletteBtn').click(this.playRandomVideo);
 
+    // make it easy to get a random item from an array
+    Array.prototype.getRandomItem = function() {
+      return this[Math.floor(Math.random()*this.length)];
+    };
+
     return this;
   },
 
@@ -106,63 +111,67 @@ VideoChooser.prototype = {
   },
 
   setupBindings: function() {
-    eventsMediator.bind('controls:playVideo', this.playVideo);
-
+    // CATEGORY
     eventsMediator.bind('controls:loadCategory', this.loadCategory);
     eventsMediator.bind('chooser:loadCategory', this.controls.subcategoriesView.loadCategory);
     eventsMediator.bind('chooser:loadCategory', this.controls.playlistsView.reload);
     eventsMediator.bind('chooser:loadCategory', this.controls.videosView.reload);
 
+    // SUBCATEGORY
     eventsMediator.bind('controls:loadSubcategory', this.loadSubcategory);
     eventsMediator.bind('chooser:loadSubcategory', this.controls.playlistsView.loadSubcategory);
     eventsMediator.bind('chooser:loadSubcategory', this.controls.videosView.reload);
 
+    // PLAYLIST
     eventsMediator.bind('controls:loadPlaylist', this.loadPlaylist);
     eventsMediator.bind('chooser:loadPlaylist', this.controls.videosView.loadPlaylist);
 
-    this.playlists.bind('playlists:randomPlaylist', this.controls.handleRandomPlaylist);
-    this.playlists.bind('playlists:randomVideo', this.controls.handleRandomVideo);
-    this.playlists.bind('playlists:randomVideo', this.player.playVideo);
-    this.playlists.bind('playlists:newVideoList', this.controls.resetVideoList);
-    this.dials.bind('dials:randomPlaylist', this.playlists.selectRandomPlaylist);
-    this.dials.bind('dials:randomVideo', this.playlists.selectRandomVideo);
+    eventsMediator.bind('dials:randomVideo', this.playRandomVideo);
+    eventsMediator.bind('controls:playVideo', this.playVideo);
   },
 
   loadCategory: function(cat) {
-    var categoryChanged = this.selection.categoryId !== cat,
-        subcat = (categoryChanged ? undefined : this.selection.subcategoryId),
-        playlist = (categoryChanged ? undefined : this.selection.playlistId);
+    var catId           = (typeof cat === 'string') ? cat : cat.id,
+        categoryChanged = this.selection.categoryId !== catId,
+        subcat          = (categoryChanged ? undefined : this.selection.subcategoryId),
+        playlist        = (categoryChanged ? undefined : this.selection.playlistId);
 
-    this.selection.categoryId    = cat;
+    this.selection.categoryId    = catId;
     this.selection.subcategoryId = subcat;
     this.selection.playlistId    = playlist;
     eventsMediator.trigger('chooser:loadCategory', this.selection);
   },
 
   loadSubcategory: function(subcat) {
-    var subcategoryChanged = this.selection.subcategoryId !== cat,
+    var subcatId           = (typeof subcat === 'string') ? subcat : subcat.id,
+        subcategoryChanged = this.selection.subcategoryId !== subcatId,
         playlist = (subcategoryChanged ? undefined : this.selection.playlistId);
 
-    this.selection.subcategoryId = subcat;
+    this.selection.subcategoryId = subcatId;
     this.selection.playlistId    = playlist;
     eventsMediator.trigger('chooser:loadSubcategory', this.selection);
   },
 
-  loadPlaylist: function(playlist) {
-    var playlistChanged = this.selection.playlistId !== playlist,
+  loadPlaylist: function(playlist, callback) {
+    var playlistId = (typeof playlist === 'string') ? playlist : playlist.id,
+        playlistChanged = this.selection.playlistId !== playlist,
+        videos = this.videos.where({ playlistId: playlistId }),
         _this = this;
 
-    videos = this.videos.where({ playlistId: playlist });
-    this.selection.playlistId = playlist;
+    this.selection.playlistId = playlistId;
 
     if (!_.isEmpty(videos)) {
       // Video list was already downloaded
       eventsMediator.trigger('chooser:loadPlaylist', this.selection);
+      callback();
     }
     else {
       // Need to fetch video list
       this.fetchVideosForPlaylist(playlist, function(v) {
         eventsMediator.trigger('chooser:loadPlaylist', _this.selection);
+        if (callback) {
+          callback();
+        }
       });
     }
   },
@@ -202,11 +211,42 @@ VideoChooser.prototype = {
     });
   },
 
-  playRandomVideo: function(evt) {
+  playRandomVideo: function() {
     // click handler for roulette button
-    var _this = this;
-    evt.preventDefault();
-    this.video = this.playlists.selectRandomVideo();
+    var category,
+        subcats,
+        subcategory,
+        playlists,
+        playlist,
+        _this = this;
+
+    // RANDOM CATEGORY
+    category = this.categories.at(Math.floor(Math.random() * this.categories.length));
+    console.log('category: ' + category.id);
+    this.loadCategory(category);
+
+    // RANDOM SUBCATEGORY
+    subcats = this.subcategories.where({ categoryId: category.id });
+    subcategory = subcats.getRandomItem();
+    console.log('subcategory: ' + subcategory.id);
+    this.loadSubcategory(subcategory);
+
+    // RANDOM PLAYLIST
+    console.log(category.id);
+    console.log(subcategory.id);
+    playlists = this.playlists.where({ categoryId: category.id, subcategoryId: subcategory.id });
+    playlist = playlists.getRandomItem();
+
+    this.loadPlaylist(playlist, function() {
+      // RANDOM VIDEO
+      var videos = _this.videos.where({ playlistId: playlist.id }),
+          video  = videos.getRandomItem();
+
+      console.log(videos);
+      _this.playVideo(video.get('youtube_id'));
+    });
+
+    //this.video = this.playlists.selectRandomVideo();
   },
 
   playVideo: function(youtube_id) {
@@ -221,7 +261,7 @@ VideoChooser.prototype = {
     // Display the video info
     video = this.videos.where({ youtube_id: youtube_id });
     if (video.length === 0) {
-      throw "No video found for this Youtube id. Something is wrong!"
+      throw "No video found for this Youtube id. Something is wrong!";
     }
     this.videoInfo.render(video[0].toJSON());
   }

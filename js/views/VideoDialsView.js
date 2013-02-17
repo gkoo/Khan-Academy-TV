@@ -44,31 +44,17 @@ var VideoDialsView = Backbone.View.extend({
   },
 
   handleClick: function(evt) {
-    var el = $(evt.target),
+    var $el = $(evt.target),
         dialEl,
         id;
 
     // Determine what dial was clicked.
-    if (el.hasClass('dial')) {
-      id = el.attr('id');
-    }
-    else {
-      dialEl = el.parentsUntil('#dials', '.dial');
-      if (dialEl.length) {
-        id = dialEl.attr('id');
-      }
-      else {
-        // clicked somewhere outside of the dials
-        return;
-      }
-    }
+    if ($el.parentsUntil('#dials').length > 0) {
+      id = $el.attr('id');
 
-    this.rotateDial(id);
-    if (id === 'playlistDial') {
-      this.trigger('dials:randomPlaylist');
+      this.rotateDial(id);
+      eventsMediator.trigger('dials:randomVideo');
     }
-    else if (id === 'videoDial') {
-      this.trigger('dials:randomVideo');
-    }
+    evt.preventDefault();
   }
 });

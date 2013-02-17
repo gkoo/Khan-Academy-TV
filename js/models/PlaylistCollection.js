@@ -82,16 +82,7 @@ var PlaylistCollection = Backbone.Collection.extend({
     }
 
     $.getJSON('http://www.khanacademy.org/api/v1/playlists/' + playlist.id + '/videos', function(data) {
-      videos = new Videos(data);
-      videos.playlistId = playlist.id;
-      playlist.set({ 'videos': videos });
-      videos.bind('videos:randomVideo', function(video) {
-        _this.trigger('playlists:randomVideo', video);
-      });
-
-      if (callback) {
-        callback(videos);
-      }
+      if (callback) { callback(videos); }
     });
   }
 });
