@@ -16,5 +16,5 @@ var VideoCollection = Backbone.Collection.extend({
     // Choose random playlist
     rand = Math.floor(Math.random() * this.length);
     this.trigger('videos:randomVideo', this.at(rand));
-  },
+  }
 });
