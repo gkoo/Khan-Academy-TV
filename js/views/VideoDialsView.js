@@ -9,16 +9,15 @@ var VideoDialsView = Backbone.View.extend({
     this.playlistDialRotate = 0;
     this.videoDialRotate = 0;
 
-    this.rotateDial('playlistDial');
-    this.rotateDial('videoDial');
+    this.rotateDial();
   },
 
   events: {
     'click': 'handleClick'
   },
 
-  rotateDial: function(dialId, rotateVal) {
-    var el = $('#' + dialId + ' .spinnerThingy');
+  rotateDial: function(rotateVal) {
+    var el = $('#videoDial .spinnerThingy');
     if (typeof rotateVal === 'undefined') {
       // min rotate: 360, max rotate: 720
       rotateVal = Math.floor(Math.random()*360)+360;
@@ -26,15 +25,8 @@ var VideoDialsView = Backbone.View.extend({
         rotateVal *= (-1);
       }
     }
-    if (dialId === 'playlistDial') {
-      rotateVal += this.playlistDialRotate;
-      this.playlistDialRotate = rotateVal;
-    }
-    else {
-      // dialId === 'videoDial'
-      rotateVal += this.videoDialRotate;
-      this.videoDialRotate = rotateVal;
-    }
+    rotateVal += this.videoDialRotate;
+    this.videoDialRotate = rotateVal;
 
     rotateValStr = 'rotate(' + rotateVal + 'deg)';
     el.css({'-moz-transform':    rotateValStr,
@@ -52,7 +44,7 @@ var VideoDialsView = Backbone.View.extend({
     if ($el.parentsUntil('#dials').length > 0) {
       id = $el.attr('id');
 
-      this.rotateDial(id);
+      this.rotateDial();
       eventsMediator.trigger('dials:randomVideo');
     }
     evt.preventDefault();
