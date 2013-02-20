@@ -113,21 +113,25 @@ VideoChooser.prototype = {
   setupBindings: function() {
     // CATEGORY
     eventsMediator.bind('controls:loadCategory', this.loadCategory);
+    eventsMediator.bind('chooser:loadCategory', this.controls.categoriesView.setHighlight);
     eventsMediator.bind('chooser:loadCategory', this.controls.subcategoriesView.loadCategory);
     eventsMediator.bind('chooser:loadCategory', this.controls.playlistsView.reload);
     eventsMediator.bind('chooser:loadCategory', this.controls.videosView.reload);
 
     // SUBCATEGORY
     eventsMediator.bind('controls:loadSubcategory', this.loadSubcategory);
+    eventsMediator.bind('chooser:loadSubcategory', this.controls.subcategoriesView.setHighlight);
     eventsMediator.bind('chooser:loadSubcategory', this.controls.playlistsView.loadSubcategory);
     eventsMediator.bind('chooser:loadSubcategory', this.controls.videosView.reload);
 
     // PLAYLIST
     eventsMediator.bind('controls:loadPlaylist', this.loadPlaylist);
+    eventsMediator.bind('chooser:loadPlaylist', this.controls.playlistsView.setHighlight);
     eventsMediator.bind('chooser:loadPlaylist', this.controls.videosView.loadPlaylist);
 
     eventsMediator.bind('dials:randomVideo', this.playRandomVideo);
     eventsMediator.bind('controls:playVideo', this.playVideo);
+    eventsMediator.bind('controls:playVideo', this.controls.videosView.setHighlight);
   },
 
   loadCategory: function(cat) {
@@ -191,7 +195,7 @@ VideoChooser.prototype = {
       var trimmedVideos = [];
       _.each(data, function(video) {
         trimmedVideos.push({
-          readable_id:   video.readable_id,
+          id:            video.readable_id, // turn readable_id into regular id
           youtube_id:    video.youtube_id,
           title:         video.title,
           description:   video.description,
@@ -222,18 +226,14 @@ VideoChooser.prototype = {
 
     // RANDOM CATEGORY
     category = this.categories.at(Math.floor(Math.random() * this.categories.length));
-    console.log('category: ' + category.id);
     this.loadCategory(category);
 
     // RANDOM SUBCATEGORY
     subcats = this.subcategories.where({ categoryId: category.id });
     subcategory = subcats.getRandomItem();
-    console.log('subcategory: ' + subcategory.id);
     this.loadSubcategory(subcategory);
 
     // RANDOM PLAYLIST
-    console.log(category.id);
-    console.log(subcategory.id);
     playlists = this.playlists.where({ categoryId: category.id, subcategoryId: subcategory.id });
     playlist = playlists.getRandomItem();
 
@@ -242,27 +242,25 @@ VideoChooser.prototype = {
       var videos = _this.videos.where({ playlistId: playlist.id }),
           video  = videos.getRandomItem();
 
-      console.log(videos);
-      _this.playVideo(video.get('youtube_id'));
+      eventsMediator.trigger('controls:playVideo', video.id);
     });
-
-    //this.video = this.playlists.selectRandomVideo();
   },
 
-  playVideo: function(youtube_id) {
+  playVideo: function(id) {
     // get selectedPlaylist from this.playlist
     // search through videos for video
     var playlist,
-        video;
-
-    // Start playing the video
-    this.player.playVideo(youtube_id);
+        video = this.videos.get(id);
 
     // Display the video info
-    video = this.videos.where({ youtube_id: youtube_id });
     if (video.length === 0) {
       throw "No video found for this Youtube id. Something is wrong!";
     }
-    this.videoInfo.render(video[0].toJSON());
+
+    this.selection.videoId = id;
+
+    // Start playing the video
+    this.player.playVideo(video.get('youtube_id'));
+    this.videoInfo.render(video.toJSON());
   }
 };

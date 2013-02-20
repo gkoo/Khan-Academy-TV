@@ -17,9 +17,13 @@ var ListView = Backbone.View.extend({
 
     id = id.substring(id.indexOf('-')+1);
     eventsMediator.trigger(eventName, id);
-    this.$el.find('.dropdown-item a.selected').removeClass('selected');
-    $target.addClass('selected');
     evt.preventDefault();
+  },
+
+  highlightHelper: function($elToHighlight) {
+    this.$el.find('.dropdown-item a.selected')
+            .removeClass('selected');
+    $elToHighlight.addClass('selected');
   },
 
   render: function() {
@@ -69,47 +73,6 @@ var ListView = Backbone.View.extend({
       $dropdownEl.children().hide();
     }
     return this;
-  },
-
-  handleRandomItem: function(id, type, highlight) {
-    // Decomposed method for scrolling wheels for random playlists and videos
-    var idPrefix         = (type === 'playlist') ? 'playlist-' : 'video-',
-        itemId           = [idPrefix, id].join(''),
-        containerEl      = (type === 'playlist') ? this.$playlistEl : this.$videoEl,
-        wheelContainerEl = containerEl.children('.wheelContainer'),
-        highlight        = (typeof highlight !== 'undefined') ? highlight : false,
-        itemEl,
-        wheelEl,
-        newTop;
-
-    if (type === 'playlist') {
-      wheelEl = containerEl.find('.wheel');
-      itemEl = $('#' + itemId);
-    }
-    else {
-      // type === 'video'
-      wheelEl = containerEl.find('.wheel.selected');
-      itemEl = $('#video .wheel.selected .' + itemId);
-    }
-    newTop = (itemEl.offset().top - wheelEl.offset().top)*(-1);
-    // next line is just for centering the item in the wheel
-    newTop += wheelContainerEl.height()/2 - itemEl.height()/2 - parseInt(itemEl.css('padding-top'), 10)*2;
-
-    if (type === 'video') {
-      wheelEl = wheelEl.filter('.selected');
-    }
-    wheelEl.css('top', newTop + 'px');
-
-    if (highlight) {
-      itemEl.addClass('selected')
-            .siblings('.selected').removeClass('selected');
-      if (type === 'playlist') {
-        this.selectedPlaylistEl = itemEl;
-      }
-      if (type === 'video') {
-        this.selectedVideoEl = itemEl;
-      }
-    }
   },
 
   setTemplate: function(template) {

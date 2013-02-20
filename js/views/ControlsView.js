@@ -61,7 +61,7 @@ var ControlsView = Backbone.View.extend({
   },
 
   handleRandomVideo: function(video) {
-    this.handleRandomItem(video.get('readable_id'), 'video', true);
+    this.handleRandomItem(video.id, 'video', true);
     this.populateVideoInfo(video);
   },
 

@@ -1,15 +1,14 @@
 var VideosView = ListView.extend({
-  template: _.template('<li value="video-<%= readable_id %>" data-youtube-id="<%= youtube_id %>" class="dropdown-item for-playlist-<%= playlistId %>"><a href="#"><%= title %></a></li>'),
+  template: _.template('<li id="video-<%= id %>" data-youtube-id="<%= youtube_id %>" class="dropdown-item for-playlist-<%= playlistId %>"><a href="#"><%= title %></a></li>'),
 
   handleClick: function(evt) {
     // time to play a video!
     var $target = $(evt.target),
-        $parent = $target.parent();
-    youtube_id = $parent.attr('data-youtube-id');
-    eventsMediator.trigger('controls:playVideo', youtube_id);
+        $parent = $target.parent(),
+        videoId = $parent.attr('id').substring(6);
 
-    this.$el.find('.dropdown-item a.selected').removeClass('selected');
-    $target.addClass('selected');
+    eventsMediator.trigger('controls:playVideo', videoId);
+
     evt.preventDefault();
   },
 
@@ -32,6 +31,11 @@ var VideosView = ListView.extend({
     this.selectionObj.playlistId = selectionObj.playlistId;
     this.selectionId = selectionObj.playlistId;
     this.render();
+  },
+
+  setHighlight: function(videoId) {
+    var item = $('#video-' + videoId).children('a');
+    this.highlightHelper(item);
   },
 
   // Define the higher-level selections in this object.

@@ -22,6 +22,11 @@ var PlaylistsView = ListView.extend({
     this.render();
   },
 
+  setHighlight: function(selObj) {
+    var item = $('#playlist-' + selObj.playlistId).children('a');
+    this.highlightHelper(item);
+  },
+
   // Define the higher-level selections in this object.
   // Type: Object<String, String>
   selectionObj: {},
