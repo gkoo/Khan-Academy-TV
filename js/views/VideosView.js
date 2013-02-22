@@ -5,9 +5,11 @@ var VideosView = ListView.extend({
     // time to play a video!
     var $target = $(evt.target),
         $parent = $target.parent(),
-        videoId = $parent.attr('id').substring(6);
-
-    eventsMediator.trigger('controls:playVideo', videoId);
+        videoId;
+    if ($parent.hasClass('dropdown-item')) {
+      videoId = $parent.attr('id').substring(6);
+      eventsMediator.trigger('controls:playVideo', videoId);
+    }
 
     evt.preventDefault();
   },

@@ -12,10 +12,13 @@ var SubcategoriesView = ListView.extend({
     this.clickHelper(evt, 'controls:loadSubcategory');
   },
 
-  setHighlight: function(selObj) {
-    var item = $('#subcategory-' + selObj.subcategoryId).children('a');
+  setHighlight: function(selObj, doCenter) {
+    var $item = $('#subcategory-' + selObj.subcategoryId).children('a');
+    this.highlightHelper($item);
 
-    this.highlightHelper(item);
+    if (doCenter) {
+      this.centerItem($item);
+    }
   },
 
   // Define the higher-level selections in this object.

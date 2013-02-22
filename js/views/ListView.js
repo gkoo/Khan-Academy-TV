@@ -13,10 +13,13 @@ var ListView = Backbone.View.extend({
   clickHelper: function(evt, eventName) {
     var $target = $(evt.target),
         $parent = $target.parent(),
-        id = $parent.attr('id');
+        id;
 
-    id = id.substring(id.indexOf('-')+1);
-    eventsMediator.trigger(eventName, id);
+    if ($parent.hasClass('dropdown-item')) {
+      id = $parent.attr('id');
+      id = id.substring(id.indexOf('-')+1);
+      eventsMediator.trigger(eventName, id);
+    }
     evt.preventDefault();
   },
 
@@ -24,6 +27,20 @@ var ListView = Backbone.View.extend({
     this.$el.find('.dropdown-item a.selected')
             .removeClass('selected');
     $elToHighlight.addClass('selected');
+  },
+
+  // Centers the list on a particular item by setting scrollTop()
+  centerItem: function($el) {
+    console.log($el);
+    var $dropdown     = this.$el.find('.dropdown'),
+        currScrollTop = $dropdown.scrollTop(),
+        ulAbsoluteTop = $dropdown.position().top - currScrollTop,
+        elRelativeTop = $el.position().top - ulAbsoluteTop - 10, // 10 padding
+        newScrollTop  = elRelativeTop - ($dropdown.height() - 20)/2 + 20;
+
+    $dropdown.animate({
+      scrollTop: newScrollTop
+    }, 2000);
   },
 
   render: function() {

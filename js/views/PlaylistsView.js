@@ -1,5 +1,5 @@
 var PlaylistsView = ListView.extend({
-  template: _.template('<li id="playlist-<%= id %>" class="dropdown-item"><a href="#"><%= title %></a></li>'),
+  template: _.template('<li id="playlist-<%= id %>" class="dropdown-item for-<%= subcategoryId %>"><a href="#"><%= title %></a></li>'),
 
   handleClick: function(evt) {
     this.clickHelper(evt, 'controls:loadPlaylist');
@@ -22,9 +22,13 @@ var PlaylistsView = ListView.extend({
     this.render();
   },
 
-  setHighlight: function(selObj) {
-    var item = $('#playlist-' + selObj.playlistId).children('a');
-    this.highlightHelper(item);
+  setHighlight: function(selObj, doCenter) {
+    var $item = $('#playlist-' + selObj.playlistId).children('a');
+    this.highlightHelper($item);
+
+    if (doCenter) {
+      this.centerItem($item);
+    }
   },
 
   // Define the higher-level selections in this object.

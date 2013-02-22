@@ -5,9 +5,13 @@ var CategoriesView = ListView.extend({
     this.clickHelper(evt, 'controls:loadCategory');
   },
 
-  setHighlight: function(selObj) {
-    var item = $('#category-' + selObj.categoryId).children('a');
-    this.highlightHelper(item);
+  setHighlight: function(selObj, doCenter) {
+    var $item = $('#category-' + selObj.categoryId).children('a');
+    this.highlightHelper($item);
+
+    if (doCenter) {
+      this.centerItem($item);
+    }
   },
 
   // No selection hierarchy necessary for this view.
