@@ -44,6 +44,17 @@ var VideosView = ListView.extend({
     }
   },
 
+  clear: function(id) {
+    if (id !== this.selectionId) {
+      this.$el.find('.dropdown-item').hide();
+    }
+  },
+
+  onNoVideos: function() {
+    this.$el.find('.dropdown-item').hide();
+    this.$el.find('.error').show();
+  },
+
   // Define the higher-level selections in this object.
   // Type: Object<String, String>
   selectionObj: {},

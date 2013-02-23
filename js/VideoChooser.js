@@ -111,26 +111,33 @@ VideoChooser.prototype = {
 
   setupBindings: function() {
     // CATEGORY
-    eventsMediator.bind('controls:loadCategory', this.loadCategory);
-    eventsMediator.bind('chooser:loadCategory', this.controls.categoriesView.setHighlight);
-    eventsMediator.bind('chooser:loadCategory', this.controls.subcategoriesView.loadCategory);
-    eventsMediator.bind('chooser:loadCategory', this.controls.playlistsView.reload);
-    eventsMediator.bind('chooser:loadCategory', this.controls.videosView.reload);
+    eventsMediator.on('controls:loadCategory', this.loadCategory);
+    eventsMediator.on('chooser:loadCategory', this.controls.categoriesView.setHighlight);
+    eventsMediator.on('chooser:loadCategory', this.controls.subcategoriesView.loadCategory);
+    eventsMediator.on('chooser:loadCategory', this.controls.playlistsView.reload);
+    eventsMediator.on('chooser:loadCategory', this.controls.videosView.reload);
 
     // SUBCATEGORY
-    eventsMediator.bind('controls:loadSubcategory', this.loadSubcategory);
-    eventsMediator.bind('chooser:loadSubcategory', this.controls.subcategoriesView.setHighlight);
-    eventsMediator.bind('chooser:loadSubcategory', this.controls.playlistsView.loadSubcategory);
-    eventsMediator.bind('chooser:loadSubcategory', this.controls.videosView.reload);
+    eventsMediator.on('controls:loadSubcategory', this.loadSubcategory);
+    eventsMediator.on('chooser:loadSubcategory', this.controls.subcategoriesView.setHighlight);
+    eventsMediator.on('chooser:loadSubcategory', this.controls.playlistsView.loadSubcategory);
+    eventsMediator.on('chooser:loadSubcategory', this.controls.videosView.reload);
 
     // PLAYLIST
-    eventsMediator.bind('controls:loadPlaylist', this.loadPlaylist);
-    eventsMediator.bind('chooser:loadPlaylist', this.controls.playlistsView.setHighlight);
-    eventsMediator.bind('chooser:loadPlaylist', this.controls.videosView.loadPlaylist);
+    eventsMediator.on('controls:loadPlaylist', this.loadPlaylist);
+    eventsMediator.on('controls:loadPlaylist', this.controls.videosView.clear);
+    eventsMediator.on('controls:loadPlaylist', this.controls.playlistsView.setHighlight);
+    // Need to handle this setHighlight call differently. Don't want to wait until AJAX call
+    // is finished before highlighting, so the events are set up differently.
+    eventsMediator.on('chooser:highlightPlaylist', this.controls.playlistsView.setHighlight);
+    eventsMediator.on('chooser:loadPlaylist', this.controls.videosView.loadPlaylist);
 
-    eventsMediator.bind('dials:randomVideo', this.playRandomVideo);
-    eventsMediator.bind('controls:playVideo', this.playVideo);
-    eventsMediator.bind('controls:playVideo', this.controls.videosView.setHighlight);
+    eventsMediator.on('dials:randomVideo', this.playRandomVideo);
+    eventsMediator.on('controls:playVideo', this.playVideo);
+    eventsMediator.on('controls:playVideo', this.controls.videosView.setHighlight);
+
+    // VIDEO
+    eventsMediator.on('chooser:noVideosFound', this.controls.videosView.onNoVideos);
   },
 
   loadCategory: function(cat, wasRandom) {
@@ -156,31 +163,59 @@ VideoChooser.prototype = {
   },
 
   loadPlaylist: function(playlist, wasRandom, callback) {
-    var playlistId = (typeof playlist === 'string') ? playlist : playlist.id,
+    var playlistModel = (typeof playlist === 'string') ? this.playlists.get(playlist) : playlist,
+        playlistId = playlistModel.id,
         playlistChanged = this.selection.playlistId !== playlist,
         videos = this.videos.where({ playlistId: playlistId }),
         _this = this;
 
     this.selection.playlistId = playlistId;
 
+    if (wasRandom) {
+      // User didn't click directly on list UI item. Need to highlight it.
+      eventsMediator.trigger('chooser:highlightPlaylist', playlistId, true);
+    }
     if (!_.isEmpty(videos)) {
       // Video list was already downloaded
       eventsMediator.trigger('chooser:loadPlaylist', this.selection, wasRandom);
-      callback();
+      if (callback) {
+        callback();
+      }
     }
-    else {
+    else if (!playlistModel.get('noVideos')) {
       // Need to fetch video list
-      this.fetchVideosForPlaylist(playlist, function(v) {
-        eventsMediator.trigger('chooser:loadPlaylist', _this.selection, wasRandom);
-        if (callback) {
-          callback();
+      this.fetchVideosForPlaylist(playlist, function(videos) {
+        if (videos) {
+          eventsMediator.trigger('chooser:loadPlaylist', _this.selection, wasRandom);
+          if (callback) {
+            callback();
+          }
+        }
+        // No videos found for this playlist!
+        else {
+          _this.onNoVideosFound(wasRandom);
         }
       });
+    }
+    else {
+      // Already tried to get this playlist, but there were no videos returned.
+      this.onNoVideosFound(wasRandom);
+    }
+  },
+
+  onNoVideosFound: function(wasRandom) {
+    if (wasRandom) {
+      // just choose another random video.
+      _this.playRandomVideo();
+    }
+    else {
+      // user manually chose this playlist
+      eventsMediator.trigger('chooser:noVideosFound');
     }
   },
 
   fetchVideosForPlaylist: function(playlistToFetch, callback) {
-    var playlist, videos, _this = this;
+    var playlist, _this = this;
 
     if (typeof playlistToFetch === 'string') {
       playlist = this.playlists.get(playlistToFetch);
@@ -190,26 +225,37 @@ VideoChooser.prototype = {
       playlist = playlistToFetch;
     }
 
-    $.getJSON('http://www.khanacademy.org/api/v1/playlists/' + playlist.get('url_id') + '/videos', function(data) {
-      var trimmedVideos = [];
-      _.each(data, function(video) {
-        trimmedVideos.push({
-          id:            video.readable_id, // turn readable_id into regular id
-          youtube_id:    video.youtube_id,
-          title:         video.title,
-          description:   video.description,
-          views:         video.views,
-          ka_url:        video.ka_url,
-          categoryId:    _this.selection.categoryId,
-          subcategoryId: _this.selection.subcategoryId,
-          playlistId:    playlist.id
+    $.getJSON('http://www.khanacademy.org/api/v1/topic/' + playlist.get('url_id') + '/videos', function(data) {
+      var trimmedVideos;
+
+      if (_.isEmpty(data)) {
+        // No videos returned in response.
+        playlist.set({ noVideos: true });
+        if (callback) {
+          callback();
+        }
+      }
+      else {
+        trimmedVideos = [];
+        _.each(data, function(video) {
+          trimmedVideos.push({
+            id:            video.readable_id, // turn readable_id into regular id
+            youtube_id:    video.youtube_id,
+            title:         video.title,
+            description:   video.description,
+            views:         video.views,
+            ka_url:        video.ka_url,
+            categoryId:    _this.selection.categoryId,
+            subcategoryId: _this.selection.subcategoryId,
+            playlistId:    playlist.id
+          });
         });
-      });
 
-      _this.videos.add(trimmedVideos);
+        _this.videos.add(trimmedVideos);
 
-      if (callback) {
-        callback(videos);
+        if (callback) {
+          callback(trimmedVideos);
+        }
       }
     });
   },

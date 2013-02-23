@@ -22,8 +22,8 @@ var PlaylistsView = ListView.extend({
     this.render();
   },
 
-  setHighlight: function(selObj, doCenter) {
-    var $item = $('#playlist-' + selObj.playlistId).children('a');
+  setHighlight: function(id, doCenter) {
+    var $item = $('#playlist-' + id).children('a');
     this.highlightHelper($item);
 
     if (doCenter) {

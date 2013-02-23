@@ -3,6 +3,7 @@
 @borderColor: #333;
 @headerSize: 16px;
 @panelBgColor: #eee;
+@fontSize: 14px;
 
 body, h1, h2, h3, h4, h5, h6, div, ul, ol, li, tr, td, a, p {
   border: 0;
@@ -20,7 +21,7 @@ body {
 
 a {
   color: #069;
-  font-size: 14px;
+  font-size: @fontSize;
 }
 
 #main {
@@ -119,7 +120,7 @@ a {
   }
 
   p {
-    font-size: 14px;
+    font-size: @fontSize;
     padding-bottom: 10px;
   }
 
@@ -147,7 +148,7 @@ a {
 
 .control-panel {
   float: left;
-  font-size: 14px;
+  font-size: @fontSize;
   margin-left: 15px;
   width: 200px;
 
@@ -188,6 +189,11 @@ a {
       }
     }
   }
+}
+
+.error {
+  display: none;
+  font-size: @fontSize;
 }
 
 .label {

@@ -50,6 +50,7 @@ var ListView = Backbone.View.extend({
         i,
         len;
 
+    this.$el.find('.error').hide();
     if (_.isEmpty(this.collection)) {
       $dropdownEl.children().hide();
     }
