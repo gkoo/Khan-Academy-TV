@@ -233,7 +233,7 @@ VideoChooser.prototype = {
       var videos = _this.videos.where({ playlistId: playlist.id }),
           video  = videos.getRandomItem();
 
-      eventsMediator.trigger('controls:playVideo', video.id);
+      eventsMediator.trigger('controls:playVideo', video.id, true);
     });
   },
 

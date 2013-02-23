@@ -1,5 +1,5 @@
 var VideoInfoView = Backbone.View.extend({
-  el: $('#videoInfo'),
+  el: $('#video-info'),
 
   initialize: function() {
     var templateStr = '';

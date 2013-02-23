@@ -35,9 +35,13 @@ var VideosView = ListView.extend({
     this.render();
   },
 
-  setHighlight: function(videoId) {
-    var item = $('#video-' + videoId).children('a');
-    this.highlightHelper(item);
+  setHighlight: function(videoId, doCenter) {
+    var $item = $('#video-' + videoId).children('a');
+    this.highlightHelper($item);
+
+    if (doCenter) {
+      this.centerItem($item);
+    }
   },
 
   // Define the higher-level selections in this object.

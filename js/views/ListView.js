@@ -31,7 +31,6 @@ var ListView = Backbone.View.extend({
 
   // Centers the list on a particular item by setting scrollTop()
   centerItem: function($el) {
-    console.log($el);
     var $dropdown     = this.$el.find('.dropdown'),
         currScrollTop = $dropdown.scrollTop(),
         ulAbsoluteTop = $dropdown.position().top - currScrollTop,
