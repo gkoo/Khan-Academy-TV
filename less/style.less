@@ -1,9 +1,10 @@
 @import "mixins.less";
 
-@borderColor: #333;
-@headerSize: 16px;
-@panelBgColor: #eee;
-@fontSize: 14px;
+@borderColor:   #333;
+@headerSize:    16px;
+@panelBgColor:  #eee;
+@fontSize:      14px;
+@fontColor:     #333;
 
 body, h1, h2, h3, h4, h5, h6, div, ul, ol, li, tr, td, a, p {
   border: 0;
@@ -14,7 +15,12 @@ body, h1, h2, h3, h4, h5, h6, div, ul, ol, li, tr, td, a, p {
   padding: 0;
 }
 
+html {
+  height: 100%;
+}
+
 body {
+  height: 100%;
   padding-top: 50px;
   text-align: center;
 }
@@ -25,7 +31,8 @@ a {
 }
 
 #main {
-  width: 1095px;
+  padding-left: 20px;
+  width: 1105px;
 }
 
 #main {
@@ -146,22 +153,21 @@ a {
   text-align: center;
 }
 
-.control-panel {
+.panel {
   float: left;
-  font-size: @fontSize;
   margin-left: 15px;
   width: 200px;
+
+  &, & p {
+    font-size: @fontSize;
+  }
 
   &:nth-child(1) {
     margin: 0;
   }
 
-  &.active .label {
-    color: #333;
-  }
-
   .label {
-    color: #333;
+    color: @fontColor;
     font-size: @headerSize;
     margin: 10px 0 0;
   }
@@ -200,4 +206,70 @@ a {
   background-color: #ccc;
   font-size: 32px;
   padding: 10px 5px;
+}
+
+// ABOUT
+#whatisthis {
+  position: absolute;
+  top: 0;
+  right: 0;
+
+  a {
+    display: block;
+    margin: 5px 5px 0 0;
+  }
+}
+
+#about-overlay {
+  background: rgba(0, 0, 0, 0.8);
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  min-height: 100%;
+  width: 100%;
+  z-index: 100;
+
+  .modal.panel {
+    background-color: #fff;
+    float: none;
+    margin: 150px auto 0;
+    position: relative;
+    width: 400px;
+
+    .label {
+      color: #000;
+    }
+
+    .close {
+      display: block;
+      background: url(../img/glyphicons_free/glyphicons/png/glyphicons_197_remove.png) no-repeat 10px 5px;
+      padding: 10px 10px 0;
+      text-indent: -9999px;
+      width: 26px;
+      height: 26px;
+
+      position: absolute;
+      top: 0px;
+      right: 0px;
+      z-index: 101;
+    }
+
+    .content {
+      padding: 20px 30px;
+      text-align: left;
+    }
+
+    h3 {
+      color: #000;
+      font-size: @fontSize;
+      font-weight: bold;
+      margin: 10px 0;
+    }
+
+    p {
+      line-height: 20px;
+      margin: 10px 0;
+    }
+  }
 }

@@ -13,7 +13,7 @@
       <div id="tv">
         <div id="sidePanel">
           <div id="dials">
-            <a id="videoDial" class="dial" title="Choose a random video">
+            <a id="videoDial" class="dial" title="Play a random video">
               <div class="spinnerThingy">
                 <div class="spinnerThingyInner"></div>
               </div>
@@ -24,19 +24,19 @@
         <h2 id="tvTitle"><a href="http://www.khanacademy.org" title="Go to the Khan Academy website">Khan Academy</a></h2>
       </div>
       <div id="controls">
-        <div id="categories" class="control-panel">
+        <div id="categories" class="panel">
           <h2 class="label">Categories</h2>
           <ul class="dropdown"></ul>
         </div>
-        <div id="subcategories" class="control-panel">
+        <div id="subcategories" class="panel">
           <h2 class="label">Subcategories</h2>
           <ul class="dropdown"></ul>
         </div>
-        <div id="playlists" class="control-panel">
+        <div id="playlists" class="panel">
           <h2 class="label">Playlists</h2>
           <ul class="dropdown"></ul>
         </div>
-        <div id="videos" class="control-panel">
+        <div id="videos" class="panel">
           <h2 class="label">Videos</h2>
           <ul class="dropdown">
             <li class="error">There are currently no videos available for this topic!</li>
@@ -44,7 +44,25 @@
         </div>
       </div>
     </div>
-    <div id="video-info" class="control-panel">
+    <div id="video-info" class="panel">
+    </div>
+  </div>
+  <div id="whatisthis">
+    <a href="#" title="What is this?"><img src="img/glyphicons_free/glyphicons/png/glyphicons_194_circle_question_mark.png"></a>
+  </div>
+  <div id="about-overlay">
+    <div class="modal panel">
+      <h2 class="label">About this project</h2>
+      <a class="close" href="#" title="Go back to videos">Close</a>
+      <div class="content">
+        <h3>What is this?</h3>
+        <p>This is a lightweight <a href="http://www.khanacademy.org">Khan Academy</a> video viewer app. When I first visited the Khan Academy website, I was very curious to check out some of videos. However, I found the list of videos to be a little overwhelming. (The site design has improved greatly since then!) When I learned about the Khan Academy APIs, I decided to make a random video viewer, so that it would take very little effort to get started.</p>
+        <p>It has since evolved into a generic viewer app that make it very easy to explore the content on Khan Academy. While you can browse through the different topics, I still think the most interesting videos are the ones you stumble upon by choosing a random video. (Click on the dial button on the TV!)</p>
+        <h3>Like it? Hate it? Meh it?</h3>
+        <p>Let me know on <a href="http://www.twitter.com/superkerplunk">Twitter</a>.</p>
+        <h3>Credits</h3>
+        <p>Icons: <a href="http://glyphicons.com/">Glyphicons</a></p>
+      </div>
     </div>
   </div>
   <script type="text/javascript" src="js/lib/jquery-1.9.1.min.js"></script>
@@ -71,6 +89,7 @@
   <script type="text/javascript" src="js/views/VideoDialsView.js"></script>
   <script type="text/javascript" src="js/views/VideoPlayerView.js"></script>
   <script type="text/javascript" src="js/VideoChooser.js"></script>
+  <script type="text/javascript" src="js/about.js"></script>
   <!-- Minified JS for prod -->
   <!--<script type="text/javascript" src="js/assets.js"></script> -->
   <!-- End minified JS for prod -->
