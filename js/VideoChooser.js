@@ -35,8 +35,7 @@ VideoChooser.prototype = {
     var trimmedData   = [],
         categoryHash  = {},
         categories    = [],
-        subcategories = [],
-        name;
+        subcategories = [];
 
     // Extract out only fields we need
     _.each(data, function(playlist) {
@@ -48,10 +47,20 @@ VideoChooser.prototype = {
           cat,
           subcat;
 
+      if (extendedSlug === 'random algorithms, probability') {
+        // This the topic API for this topic is broken. Just skip this one.
+        return;
+      }
+
       // Infer category/subcategory from extended_slug.
       if (slugSplit) {
-        trimmedPlaylist.categoryId = slugSplit[0];
-        trimmedPlaylist.subcategoryId = (slugSplit.length > 1) ? slugSplit[1] : trimmedPlaylist.categoryId;
+        // Sanitize category/subcategory IDs
+        cat = slugSplit[0].replace(/\s/g, '-').replace(',','');
+        subcat = (slugSplit.length > 1) ? slugSplit[1] : cat;
+        subcat = subcat.replace(/\s/g, '-').replace(',','');
+
+        trimmedPlaylist.categoryId = cat;
+        trimmedPlaylist.subcategoryId = subcat;
       }
 
       if (trimmedPlaylist.subcategoryId === 'core-finance') {
@@ -75,20 +84,16 @@ VideoChooser.prototype = {
     // Store categories and subcategories
     for (cat in categoryHash) {
       // Store category
-      name = cat.split('-');
-      name[0] = name[0][0].toUpperCase() + name[0].substring(1); // uppercase first letter in name
       categories.push({
         id: cat,
-        title: name.join(' ')
+        title: (cat[0].toUpperCase() + cat.substring(1)).replace('-', ' ', 'g')
       });
 
       // Store subcategory
       for (subcat in categoryHash[cat]) {
-        name = subcat.split('-');
-        name[0] = name[0][0].toUpperCase() + name[0].substring(1); // uppercase first letter in name
         subcategories.push({
           id: subcat,
-          title: name.join(' '),
+          title: (subcat[0].toUpperCase() + subcat.substring(1)).replace('-', ' ', 'g'),
           categoryId: cat
         });
       }
