@@ -1,29 +1,246 @@
-body,h1,h2,h3,h4,h5,h6,div,ul,ol,li,tr,td,a,p{border:0;font-family:Helvetica, Arial;font-size:10px;list-style:none;margin:0;padding:0;}
-body{padding-top:50px;text-align:center;}
-a{color:#069;font-size:14px;}
-#main,#controls{width:1095px;}
-#main{margin:0 auto 50px;}
-#tv,#videoInfo{float:left;}
-#tv,#controls{-moz-border-radius:10px;-webkit-border-radius:10px;-o-border-radius:10px;border-radius:10px;}
-#tv{background-color:#333;padding:20px 0 20px 20px;width:825px;}
-#dials{text-align:center;}
-#dials .dial{background-color:#000;border:4px solid #666;display:block;cursor:pointer;margin:24px auto;overflow:hidden;width:48px;height:48px;-moz-border-radius:27px;-webkit-border-radius:27px;-o-border-radius:27px;border-radius:27px;}
-#dials .dial:hover{background-color:#333;}
-.spinnerThingy{width:48px;height:48px;-moz-transition:-moz-transform 2s ease-out;-webkit-transition:-webkit-transform 2s ease-out;-o-transition:-o-transform 2s ease-out;transition:transform 2s ease-out;}
-.spinnerThingyInner{border-right:6px solid #fff;width:21px;height:48px;}
-#videoPlayerContainer{background-color:#000;clear:left;padding-top:5px;min-height:390px;width:710px;-moz-border-radius:50px;-webkit-border-radius:50px;-o-border-radius:50px;border-radius:50px;}
-#videoPlayerContainer.show{display:block;}
-#tvTitle{margin-top:15px;min-height:16px;width:780px;}
-#tvTitle a{color:#ccc;font-size:16px;font-weight:bold;text-decoration:none;}
-#videoInfo{background-color:#eeeeee;text-align:left;width:200px;}#videoInfo .content{padding:10px;}
-#videoInfo p{font-size:14px;padding-bottom:10px;}
-#videoInfo .label{margin:0;text-align:center;}
-#sidePanel{float:right;width:90px;}
-#rouletteBtn{font-size:24px;font-weight:bold;}
-#controls{clear:left;margin:0 auto 40px;text-align:center;}
-.control-panel{float:left;font-size:14px;margin-left:15px;width:200px;}.control-panel:nth-child(1){margin:0;}
-.control-panel.active .label{color:#333;}
-.control-panel .label{color:#333;font-size:16px;margin:10px 0 0;}
-.control-panel ul{background-color:#eeeeee;height:310px;padding:10px 0;margin:0;overflow:auto;}.control-panel ul.show{height:100%;}
-.control-panel ul a{background-color:#eeeeee;display:block;padding:5px 10px;text-decoration:none;}.control-panel ul a:hover,.control-panel ul a.selected{background-color:#069;color:#fff;}
-.label{background-color:#ccc;font-size:32px;padding:10px 5px;}
+body,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+div,
+ul,
+ol,
+li,
+tr,
+td,
+a,
+p {
+  border: 0;
+  font-family: Helvetica, Arial;
+  font-size: 10px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+html {
+  height: 100%;
+}
+body {
+  height: 100%;
+  padding-top: 50px;
+  text-align: center;
+}
+a {
+  color: #069;
+  font-size: 14px;
+}
+#main {
+  padding-left: 20px;
+  width: 1105px;
+}
+#main {
+  margin: 0 auto 50px;
+}
+#tv-container,
+#videoInfo {
+  float: left;
+}
+#tv,
+#controls {
+  -moz-border-radius: 10px;
+  -webkit-border-radius: 10px;
+  -o-border-radius: 10px;
+  border-radius: 10px;
+}
+#tv {
+  background-color: #333;
+  padding: 20px 0 20px 20px;
+  width: 825px;
+}
+#dials {
+  text-align: center;
+}
+#dials .dial {
+  background-color: #000;
+  border: 4px solid #666;
+  display: block;
+  cursor: pointer;
+  margin: 24px auto;
+  overflow: hidden;
+  width: 48px;
+  height: 48px;
+  -moz-border-radius: 27px;
+  -webkit-border-radius: 27px;
+  -o-border-radius: 27px;
+  border-radius: 27px;
+}
+#dials .dial:hover {
+  background-color: #333;
+}
+.spinnerThingy {
+  width: 48px;
+  height: 48px;
+  -moz-transition: -moz-transform 2s ease-out;
+  -webkit-transition: -webkit-transform 2s ease-out;
+  -o-transition: -o-transform 2s ease-out;
+  transition: transform 2s ease-out;
+}
+.spinnerThingyInner {
+  border-right: 6px solid #fff;
+  width: 21px;
+  height: 48px;
+}
+#videoPlayerContainer {
+  background-color: #000;
+  clear: left;
+  padding-top: 5px;
+  min-height: 390px;
+  width: 710px;
+  -moz-border-radius: 50px;
+  -webkit-border-radius: 50px;
+  -o-border-radius: 50px;
+  border-radius: 50px;
+}
+#videoPlayerContainer.show {
+  display: block;
+}
+#tvTitle {
+  margin-top: 15px;
+  min-height: 16px;
+  width: 780px;
+}
+#tvTitle a {
+  color: #ccc;
+  font-size: 16px;
+  font-weight: bold;
+  text-decoration: none;
+}
+#video-info {
+  background-color: #eeeeee;
+  text-align: left;
+  width: 200px;
+}
+#video-info .content {
+  padding: 10px;
+}
+#video-info p {
+  font-size: 14px;
+  padding-bottom: 10px;
+}
+#video-info .label {
+  margin: 0;
+  text-align: center;
+}
+#sidePanel {
+  float: right;
+  width: 90px;
+}
+#rouletteBtn {
+  font-size: 24px;
+  font-weight: bold;
+}
+#controls {
+  clear: left;
+  margin: 0 auto 40px;
+  text-align: center;
+}
+.panel {
+  float: left;
+  margin-left: 15px;
+  width: 200px;
+}
+.panel,
+.panel p {
+  font-size: 14px;
+}
+.panel:nth-child(1) {
+  margin: 0;
+}
+.panel .label {
+  color: #333333;
+  font-size: 16px;
+  margin: 10px 0 0;
+}
+.panel ul {
+  background-color: #eeeeee;
+  height: 310px;
+  padding: 10px 0;
+  margin: 0;
+  overflow: auto;
+}
+.panel ul.show {
+  height: 100%;
+}
+.panel ul a {
+  background-color: #eeeeee;
+  display: block;
+  padding: 5px 10px;
+  text-decoration: none;
+}
+.panel ul a:hover,
+.panel ul a.selected {
+  background-color: #069;
+  color: #fff;
+}
+.error {
+  display: none;
+  font-size: 14px;
+}
+.label {
+  background-color: #ccc;
+  font-size: 32px;
+  padding: 10px 5px;
+}
+#whatisthis {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+#whatisthis a {
+  display: block;
+  margin: 5px 5px 0 0;
+}
+#about-overlay {
+  background: rgba(0, 0, 0, 0.8);
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  min-height: 100%;
+  width: 100%;
+  z-index: 100;
+}
+#about-overlay .modal.panel {
+  background-color: #fff;
+  float: none;
+  margin: 150px auto 0;
+  position: relative;
+  width: 400px;
+}
+#about-overlay .modal.panel .label {
+  color: #000;
+}
+#about-overlay .modal.panel .close {
+  display: block;
+  background: url(../img/glyphicons_free/glyphicons/png/glyphicons_197_remove.png) no-repeat 10px 5px;
+  padding: 10px 10px 0;
+  text-indent: -9999px;
+  width: 26px;
+  height: 26px;
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  z-index: 101;
+}
+#about-overlay .modal.panel .content {
+  padding: 20px 30px;
+  text-align: left;
+}
+#about-overlay .modal.panel h3 {
+  color: #000;
+  font-size: 14px;
+  font-weight: bold;
+  margin: 10px 0;
+}
+#about-overlay .modal.panel p {
+  line-height: 20px;
+  margin: 10px 0;
+}
